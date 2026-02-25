@@ -1,4 +1,4 @@
-package com.calvin_tech.church_finance
+package com.calvintech.churchfinance
 
 import org.springframework.boot.fromApplication
 import org.springframework.boot.with

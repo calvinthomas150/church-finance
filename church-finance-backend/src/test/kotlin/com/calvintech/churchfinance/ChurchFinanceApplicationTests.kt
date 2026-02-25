@@ -1,4 +1,4 @@
-package com.calvin_tech.church_finance
+package com.calvintech.churchfinance
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest

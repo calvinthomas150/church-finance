@@ -6,9 +6,9 @@ plugins {
 	kotlin("plugin.jpa") version "2.2.21"
 }
 
-group = "com.calvin-tech"
+group = "com.calvintech"
 version = "0.0.1-SNAPSHOT"
-description = "Demo project for Spring Boot"
+description = "Church financial management for small independent churches"
 
 java {
 	toolchain {
