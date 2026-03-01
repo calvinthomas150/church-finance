@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/church-finance-backend"
+    schedule:
+      interval: "weekly"
+    groups:
+      gradle:
+        patterns:
+          - "*"
