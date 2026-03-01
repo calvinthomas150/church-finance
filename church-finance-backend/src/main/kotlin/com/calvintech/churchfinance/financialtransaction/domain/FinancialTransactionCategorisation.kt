@@ -7,5 +7,5 @@ data class FinancialTransactionCategorisation(
     val id: Ulid,
     val amount: BigDecimal,
     val categoryId: Ulid?,
-    val description: String?
+    val description: String?,
 )

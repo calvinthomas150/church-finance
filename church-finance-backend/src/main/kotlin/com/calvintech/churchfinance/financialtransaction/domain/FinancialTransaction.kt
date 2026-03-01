@@ -6,7 +6,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Currency
 
-data class FinancialTransaction (
+data class FinancialTransaction(
     val id: Ulid,
     val churchId: Ulid,
     val createdAt: LocalDateTime,
@@ -18,10 +18,10 @@ data class FinancialTransaction (
     val accountId: Ulid?,
     val bankReference: String?,
     val description: String?,
-    val categorisations: List<FinancialTransactionCategorisation>
+    val categorisations: List<FinancialTransactionCategorisation>,
 ) {
     init {
-        require(categorisations.isEmpty() || categorisations.sumOf { it.amount } .compareTo( amount) == 0) {
+        require(categorisations.isEmpty() || categorisations.sumOf { it.amount }.compareTo(amount) == 0) {
             "Sum of categorisation amounts must equal transaction amount"
         }
     }
