@@ -5,8 +5,7 @@ language: "en-GB"
 tone_instructions: >-
   Be thorough and educational. When suggesting improvements, explain the 'why'
   behind the recommendation, especially for Kotlin idioms, Spring Boot conventions,
-  and domain-driven design principles. Treat this as a mentoring opportunity
-  rather than just pointing out issues.
+  and domain-driven design principles.
 
 early_access: true
 
