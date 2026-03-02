@@ -94,6 +94,8 @@ reviews:
       timeout_ms: 90000
 
     # Disable tools not relevant to this Kotlin/Spring Boot project
+    markdownlint:
+      enabled: false
     ruff:
       enabled: false
     biome:
