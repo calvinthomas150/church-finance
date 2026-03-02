@@ -89,8 +89,6 @@ reviews:
       enabled: true
     gitleaks:
       enabled: true
-    markdownlint:
-      enabled: true
     github-checks:
       enabled: true
       timeout_ms: 90000
