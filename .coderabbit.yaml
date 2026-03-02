@@ -21,12 +21,7 @@ reviews:
 
   path_filters:
     - "!**/*.md"
-    - "!**/gradle/wrapper/**"
-    - "!**/gradlew"
-    - "!**/gradlew.bat"
     - "!**/.gitignore"
-    - "!**/application.yml"
-    - "!**/application-*.yml"
 
   path_instructions:
     - path: "**/domain/**"
