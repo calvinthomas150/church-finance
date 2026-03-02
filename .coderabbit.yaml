@@ -1,0 +1,169 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "en-GB"
+
+tone_instructions: >-
+  Be thorough and educational. When suggesting improvements, explain the 'why'
+  behind the recommendation, especially for Kotlin idioms, Spring Boot conventions,
+  and domain-driven design principles. Treat this as a mentoring opportunity
+  rather than just pointing out issues.
+
+early_access: true
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_in_walkthrough: false
+  review_status: true
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  poem: false
+
+  path_filters:
+    - "!**/*.md"
+    - "!**/gradle/wrapper/**"
+    - "!**/gradlew"
+    - "!**/gradlew.bat"
+    - "!**/.gitignore"
+    - "!**/application.yml"
+    - "!**/application-*.yml"
+
+  path_instructions:
+    - path: "**/domain/**"
+      instructions: >-
+        This is a domain-driven design project. Domain classes should be rich
+        domain models, not anaemic data holders. Review for:
+        - Proper encapsulation of business invariants and rules
+        - Value objects used where appropriate instead of primitives
+        - Aggregates that protect consistency boundaries
+        - No framework annotations (JPA, Spring) leaking into domain classes
+        - Domain events where state transitions occur
+        - Kotlin idiomatic patterns (data classes for value objects, sealed classes
+          for type hierarchies, init blocks for validation)
+
+    - path: "**/application/**"
+      instructions: >-
+        Application layer should orchestrate domain operations. Review for:
+        - Services that coordinate domain objects without containing business logic
+        - Proper transaction boundary management
+        - Use case oriented service methods (not CRUD)
+        - DTOs or command/query objects for input/output, not domain entities
+
+    - path: "**/infrastructure/**"
+      instructions: >-
+        Infrastructure layer handles persistence and external concerns. Review for:
+        - Repository implementations that map between domain and persistence models
+        - No domain logic leaking into infrastructure code
+        - Proper use of Spring Data JPA or JDBC patterns
+        - Clean separation from the domain layer
+
+    - path: "**/*Test.kt"
+      instructions: >-
+        Review tests for:
+        - Descriptive test names that document behaviour (BDD style preferred)
+        - Testing domain invariants and business rules, not just getters/setters
+        - Proper use of JUnit 5 features (nested classes, parameterised tests)
+        - Arrange-Act-Assert structure
+        - No unnecessary mocking of domain objects
+
+    - path: "**/build.gradle.kts"
+      instructions: >-
+        Review Gradle build files for:
+        - Dependency management best practices
+        - Unnecessary or outdated dependencies
+        - Proper use of Kotlin DSL conventions
+        - Security considerations in dependency choices
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    base_branches: []
+
+  tools:
+    detekt:
+      enabled: true
+    actionlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+
+    # Disable tools not relevant to this Kotlin/Spring Boot project
+    ruff:
+      enabled: false
+    biome:
+      enabled: false
+    hadolint:
+      enabled: false
+    swiftlint:
+      enabled: false
+    phpstan:
+      enabled: false
+    phpmd:
+      enabled: false
+    phpcs:
+      enabled: false
+    golangci-lint:
+      enabled: false
+    eslint:
+      enabled: false
+    flake8:
+      enabled: false
+    rubocop:
+      enabled: false
+    buf:
+      enabled: false
+    regal:
+      enabled: false
+    pmd:
+      enabled: false
+    clang:
+      enabled: false
+    cppcheck:
+      enabled: false
+    clippy:
+      enabled: false
+    sqlfluff:
+      enabled: false
+    pylint:
+      enabled: false
+    oxc:
+      enabled: false
+    brakeman:
+      enabled: false
+    htmlhint:
+      enabled: false
+    stylelint:
+      enabled: false
+    fortitudeLint:
+      enabled: false
+    prismaLint:
+      enabled: false
+    shopifyThemeCheck:
+      enabled: false
+    luacheck:
+      enabled: false
+    blinter:
+      enabled: false
+    psscriptanalyzer:
+      enabled: false
+    checkmake:
+      enabled: false
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true
+  learnings:
+    scope: "local"
