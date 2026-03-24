@@ -22,7 +22,7 @@ class FinancialTransactionTest {
         currency = Currency.getInstance("GBP"),
         financialTransactionType = FinancialTransactionType.EXPENDITURE,
         transactionDate = LocalDate.now(),
-        accountId = UlidCreator.getUlid(),
+        bankAccountId = UlidCreator.getUlid(),
         bankReference = "Expenses",
         description = "Expenses for February",
         categorisations = categorisations,
@@ -33,6 +33,7 @@ class FinancialTransactionTest {
             id = UlidCreator.getUlid(),
             amount = amount,
             description = "Test categorisation",
+            fundId = UlidCreator.getUlid(),
             categoryId = UlidCreator.getUlid(),
         )
 

@@ -15,7 +15,7 @@ data class FinancialTransaction(
     val currency: Currency,
     val financialTransactionType: FinancialTransactionType,
     val transactionDate: LocalDate,
-    val accountId: Ulid?,
+    val bankAccountId: Ulid?,
     val bankReference: String?,
     val description: String?,
     val categorisations: List<FinancialTransactionCategorisation>,
