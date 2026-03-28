@@ -1,5 +1,18 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_input.filePath // empty' | { read -r f; if echo \"$f\" | grep -qiE '\\.(env|secret|credential|key)|\\.env\\.|application-(secret|prod|staging)\\.(properties|ya?ml)|credentials\\.(properties|ya?ml)|bootstrap-(secret|prod)\\.(properties|ya?ml)|secret\\.properties|keystore|truststore|\\.jks|\\.p12|\\.pem' ; then echo 'BLOCK: Refusing to edit sensitive file' >&2; exit 1; fi; }",
+            "timeout": 5,
+            "statusMessage": "Checking for sensitive files..."
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
