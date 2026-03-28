@@ -34,14 +34,13 @@ class FinancialTransactionTest {
     private fun buildCategorisation(
         amount: BigDecimal,
         description: String? = "Test categorisation",
-    ) =
-        FinancialTransactionCategorisation(
-            id = UlidCreator.getUlid(),
-            amount = amount,
-            description = description,
-            fundId = UlidCreator.getUlid(),
-            categoryId = UlidCreator.getUlid(),
-        )
+    ) = FinancialTransactionCategorisation(
+        id = UlidCreator.getUlid(),
+        amount = amount,
+        description = description,
+        fundId = UlidCreator.getUlid(),
+        categoryId = UlidCreator.getUlid(),
+    )
 
     @Test
     fun `should create valid transaction without categorisation`() {

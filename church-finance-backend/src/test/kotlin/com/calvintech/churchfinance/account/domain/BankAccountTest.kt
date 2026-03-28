@@ -16,21 +16,20 @@ class BankAccountTest {
         accountNumber: String? = "12345678",
         sortCode: String? = "123456",
         bankAccountStatus: BankAccountStatus = BankAccountStatus.CLOSED,
-    ) =
-        BankAccount(
-            id = UlidCreator.getUlid(),
-            churchId = UlidCreator.getUlid(),
-            createdAt = LocalDateTime.now(),
-            addedBy = UlidCreator.getUlid(),
-            accountName = accountName,
-            accountNumber = accountNumber,
-            sortCode = sortCode,
-            accountStartDate = LocalDate.now(),
-            bankAccountType = BankAccountType.CURRENT,
-            currentBalance = currentBalance,
-            currency = Currency.getInstance("GBP"),
-            bankAccountStatus = bankAccountStatus,
-        )
+    ) = BankAccount(
+        id = UlidCreator.getUlid(),
+        churchId = UlidCreator.getUlid(),
+        createdAt = LocalDateTime.now(),
+        addedBy = UlidCreator.getUlid(),
+        accountName = accountName,
+        accountNumber = accountNumber,
+        sortCode = sortCode,
+        accountStartDate = LocalDate.now(),
+        bankAccountType = BankAccountType.CURRENT,
+        currentBalance = currentBalance,
+        currency = Currency.getInstance("GBP"),
+        bankAccountStatus = bankAccountStatus,
+    )
 
     @Test
     fun `should create a closed account with zero balance`() {

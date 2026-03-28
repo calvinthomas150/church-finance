@@ -18,7 +18,7 @@ class TransactionCategoryTests {
         createdAt = LocalDateTime.now(),
         addedBy = UlidCreator.getUlid(),
         name = name,
-        transactionType = FinancialTransactionType.INCOME
+        transactionType = FinancialTransactionType.INCOME,
     )
 
     @Test

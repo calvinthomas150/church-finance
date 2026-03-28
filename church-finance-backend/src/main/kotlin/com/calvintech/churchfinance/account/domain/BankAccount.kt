@@ -33,7 +33,8 @@ data class BankAccount(
         }
 
         accountNumber?.let {
-            require(it.matches(Regex("^\\d{8,9}$"))) { "Account number must be 8 or 9 digits"
+            require(it.matches(Regex("^\\d{8,9}$"))) {
+                "Account number must be 8 or 9 digits"
             }
         }
 

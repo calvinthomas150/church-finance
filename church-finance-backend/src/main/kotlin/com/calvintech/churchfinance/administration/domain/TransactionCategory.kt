@@ -10,7 +10,7 @@ data class TransactionCategory(
     val createdAt: LocalDateTime,
     val addedBy: Ulid,
     val name: String,
-    val transactionType: FinancialTransactionType
+    val transactionType: FinancialTransactionType,
 ) {
     init {
         require(name.isNotBlank()) {
