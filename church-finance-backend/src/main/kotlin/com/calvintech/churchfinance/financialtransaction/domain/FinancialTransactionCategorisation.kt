@@ -9,4 +9,12 @@ data class FinancialTransactionCategorisation(
     val categoryId: Ulid?,
     val fundId: Ulid?,
     val description: String?,
-)
+) {
+    init {
+        description?.let {
+            require(it.isNotBlank()) {
+                "Description must not be blank"
+            }
+        }
+    }
+}

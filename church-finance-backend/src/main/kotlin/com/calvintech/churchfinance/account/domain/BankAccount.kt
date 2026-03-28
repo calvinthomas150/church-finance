@@ -21,10 +21,26 @@ data class BankAccount(
     val bankAccountStatus: BankAccountStatus,
 ) {
     init {
+
+        require(accountName.isNotBlank()) {
+            "account name cannot be blank"
+        }
+
+        sortCode?.let {
+            require(it.matches(Regex("^\\d{6}$"))) {
+                "Sort code must be 6 digits"
+            }
+        }
+
+        accountNumber?.let {
+            require(it.matches(Regex("^\\d{8,9}$"))) { "Account number must be 8 or 9 digits"
+            }
+        }
+
         require(
             bankAccountStatus == BankAccountStatus.OPEN ||
                 bankAccountStatus == BankAccountStatus.CLOSED &&
-                currentBalance == BigDecimal.ZERO,
+                currentBalance.compareTo(BigDecimal.ZERO) == 0,
         ) {
             "Account must be open or closed with zero balance"
         }

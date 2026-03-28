@@ -1,5 +1,6 @@
 package com.calvintech.churchfinance.financialtransaction.domain
 
+import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
 import com.github.f4b6a3.ulid.UlidCreator
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
@@ -13,6 +14,8 @@ class FinancialTransactionTest {
     private fun buildTransaction(
         amount: BigDecimal = BigDecimal.TEN,
         categorisations: List<FinancialTransactionCategorisation> = listOf(),
+        bankReference: String? = "Expenses",
+        description: String? = "Expenses for February",
     ) = FinancialTransaction(
         id = UlidCreator.getUlid(),
         churchId = UlidCreator.getUlid(),
@@ -23,16 +26,19 @@ class FinancialTransactionTest {
         financialTransactionType = FinancialTransactionType.EXPENDITURE,
         transactionDate = LocalDate.now(),
         bankAccountId = UlidCreator.getUlid(),
-        bankReference = "Expenses",
-        description = "Expenses for February",
+        bankReference = bankReference,
+        description = description,
         categorisations = categorisations,
     )
 
-    private fun buildCategorisation(amount: BigDecimal) =
+    private fun buildCategorisation(
+        amount: BigDecimal,
+        description: String? = "Test categorisation",
+    ) =
         FinancialTransactionCategorisation(
             id = UlidCreator.getUlid(),
             amount = amount,
-            description = "Test categorisation",
+            description = description,
             fundId = UlidCreator.getUlid(),
             categoryId = UlidCreator.getUlid(),
         )
@@ -99,5 +105,58 @@ class FinancialTransactionTest {
         val financialTransaction = buildTransaction(amount, listOf(expenses))
 
         assertNotNull(financialTransaction)
+    }
+
+    @Test
+    fun `should throw when transaction amount is negative`() {
+        assertThrows<IllegalArgumentException> {
+            buildTransaction(amount = BigDecimal.TEN.negate())
+        }
+    }
+
+    @Test
+    fun `should throw when transaction amount is zero`() {
+        assertThrows<IllegalArgumentException> {
+            buildTransaction(amount = BigDecimal.ZERO)
+        }
+    }
+
+    @Test
+    fun `should throw when bank reference is blank`() {
+        assertThrows<IllegalArgumentException> {
+            buildTransaction(bankReference = "")
+        }
+
+        assertThrows<IllegalArgumentException> {
+            buildTransaction(bankReference = "   ")
+        }
+    }
+
+    @Test
+    fun `should throw when description is blank`() {
+        assertThrows<IllegalArgumentException> {
+            buildTransaction(description = "")
+        }
+
+        assertThrows<IllegalArgumentException> {
+            buildTransaction(description = "   ")
+        }
+    }
+
+    @Test
+    fun `should allow null bank reference and description`() {
+        val transaction = buildTransaction(bankReference = null, description = null)
+        assertNotNull(transaction)
+    }
+
+    @Test
+    fun `should throw when categorisation description is blank`() {
+        assertThrows<IllegalArgumentException> {
+            buildCategorisation(amount = BigDecimal.TEN, description = "")
+        }
+
+        assertThrows<IllegalArgumentException> {
+            buildCategorisation(amount = BigDecimal.TEN, description = "   ")
+        }
     }
 }

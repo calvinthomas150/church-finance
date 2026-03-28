@@ -1,5 +1,6 @@
 package com.calvintech.churchfinance.financialtransaction.domain
 
+import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
 import com.github.f4b6a3.ulid.Ulid
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -21,6 +22,22 @@ data class FinancialTransaction(
     val categorisations: List<FinancialTransactionCategorisation>,
 ) {
     init {
+        require(amount > BigDecimal.ZERO) {
+            "Transaction amount must be greater than zero"
+        }
+
+        bankReference?.let {
+            require(it.isNotBlank()) {
+                "Bank reference must not be blank"
+            }
+        }
+
+        description?.let {
+            require(it.isNotBlank()) {
+                "Description must not be blank"
+            }
+        }
+
         require(categorisations.isEmpty() || categorisations.sumOf { it.amount }.compareTo(amount) == 0) {
             "Sum of categorisation amounts must equal transaction amount"
         }
