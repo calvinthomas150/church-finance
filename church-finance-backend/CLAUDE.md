@@ -12,6 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./gradlew ktlintCheck                  # Check Kotlin code style
 ./gradlew ktlintFormat                 # Auto-format Kotlin code
 ./gradlew addKtlintCheckGitPreCommitHook  # Install KtLint pre-commit hook
+./gradlew dependencyUpdates               # Check for newer dependency versions
 ```
 
 Tests use Testcontainers with PostgreSQL — Docker must be running.
@@ -45,6 +46,7 @@ The domain model was derived from event storming — see `src/documents/domain-m
 - **BankAccount vs Fund**: `BankAccount` (in `account`) = physical bank account; `Fund` = virtual allocation of money for a purpose. A `FinancialTransaction` references a `BankAccount` (where money moved) while its categorisations reference a `Fund` (how it's allocated)
 - **API docs**: SpringDoc OpenAPI at `/v3/api-docs` and `/swagger-ui.html`
 - **Flyway migrations**: `src/main/resources/db/migration/` (not yet populated)
+- **Dependency versions**: Most dependency versions are managed by the Spring BOM via `io.spring.dependency-management`. Only explicitly versioned dependencies (in `build.gradle.kts`) should be bumped directly. The `dependencyUpdates` task will also report transitive/BOM-managed dependencies — these update when their parent plugin or BOM is updated, not independently
 
 ## Testing Conventions
 

@@ -3,7 +3,8 @@ plugins {
     kotlin("plugin.spring") version "2.3.20"
     id("org.springframework.boot") version "4.0.5"
     id("io.spring.dependency-management") version "1.1.7"
-    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
+    id("com.github.ben-manes.versions") version "0.53.0"
     kotlin("plugin.jpa") version "2.3.20"
 }
 
@@ -55,4 +56,13 @@ allOpen {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask> {
+    rejectVersionIf {
+        val dominated =
+            listOf("alpha", "beta", "rc", "cr", "m", "preview", "snapshot")
+                .any { candidate.version.lowercase().contains(it) }
+        dominated
+    }
 }
