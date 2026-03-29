@@ -15,7 +15,7 @@ class DatabaseInfrastructureTest {
     lateinit var dataSource: DataSource
 
     @Test
-    fun `should start application context and run migrations`() {
+    fun `should create church_finance schema on startup`() {
         dataSource.connection.use { conn ->
             conn.metaData.getSchemas(null, "church_finance").use { rs ->
                 assertTrue(rs.next(), "church_finance schema should exist")
