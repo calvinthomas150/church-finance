@@ -72,7 +72,7 @@ The following domain events were identified through event storming. Events are e
 
 ## Aggregates
 
-Eight aggregates were identified. Each aggregate represents a consistency boundary of domain objects. These boundaries also serve as module boundaries within the codebase and could, in principle, be extracted into independent services.
+Nine aggregates were identified. Each aggregate represents a consistency boundary of domain objects. These boundaries also serve as module boundaries within the codebase and could, in principle, be extracted into independent services.
 
 ### Administration
 Owns the church entity and everything required to operate a church within the system.
@@ -85,6 +85,8 @@ Owns all recorded income and expenditure within the system, regardless of type. 
 Responsibilities: recording income (donations, plate offerings, restricted, designated, other), recording expenditure (expenses, payments), categorisation, evidence.
 
 > **Note:** A distinction exists between an *Expense* (reimbursement to an individual for money already spent) and a *Payment* (the church directly paying for something). Both are Financial Transactions but have different processes.
+>
+> **Note:** A `FinancialTransaction` references a `BankAccount` — where the money physically moved. A `FinancialTransactionCategorisation` references a `Fund` — how it is allocated virtually. These are deliberately separate concerns.
 
 ### Bank Reconciliation
 Owns the import and reconciliation of bank transactions. Persists reconciliation state so that reconciliation can resume from a known point rather than reprocessing from scratch.
@@ -94,11 +96,20 @@ Responsibilities: importing bank transactions, matching imported transactions to
 Supported import formats: QFX to start with expansion later to others (e.g. OFX, CSV, QBO)
 
 ### Account
-Owns the church's financial accounts, including restricted and designated funds (effectively virtual sub-accounts). Transfers between accounts and overrides of restricted funds are managed here.
+Owns the church's physical bank accounts. Tracks real bank accounts with account number, sort code, type, balance and status.
 
-Responsibilities: account management, fund transfers, restricted fund override approval.
+Responsibilities: bank account management, account status lifecycle (active, closed).
 
-> **Domain distinction:** A *Restricted* account cannot be used for another purpose without the original donor's approval. A *Designated* account is earmarked for a specific purpose but can be overridden by the appropriate authority.
+> **Domain distinction:** A *BankAccount* is a physical bank account. Virtual fund allocations are managed separately in the Fund aggregate.
+>
+> **Invariant:** A closed account must have a zero balance.
+
+### Fund
+Owns the church's virtual fund allocations. A Fund represents a logical subdivision of money for a specific purpose. Funds are referenced by Financial Transaction categorisations but are not owned by any single BankAccount — a Fund can, in principle, span multiple BankAccounts.
+
+Responsibilities: fund management, restricted and designated fund tracking, fund override approval.
+
+> **Domain distinction:** A *Restricted* fund cannot be used for another purpose without the original donor's approval. A *Designated* fund is earmarked for a specific purpose but can be overridden by the appropriate authority.
 
 ### Budget
 Owns the annual budget and its governance lifecycle. Unbudgeted spend approval is governed by threshold - church council or Voters Assembly depending on the amount.
@@ -117,7 +128,6 @@ Owns the Gift Aid submission process for both standard Gift Aid (known donors) a
 
 Responsibilities: Gift Aid submission generation and submission to HMRC, GASDS submission generation, tracking HMRC claim receipt.
 
-
 ### Report
 Owns the reporting lifecycle including report history and metadata. Reporting is a key feature area with significant potential for future development.
 
@@ -133,22 +143,26 @@ graph TD
     FT[Financial Transaction]
     BR[Bank Reconciliation]
     Acc[Account]
+    Fund[Fund]
     Bud[Budget]
     Don[Donor]
     GA[Gift Aid]
     Rep[Report]
 
-    FT -->|references| Acc
+    FT -->|references bank account| Acc
+    FT -->|categorisation references| Fund
     FT -->|references| Bud
     BR -->|matches against| FT
+    BR -->|reconciles| Acc
     GA -->|references| Don
     GA -->|references| FT
     Rep -->|derived from| FT
     Rep -->|derived from| Bud
-    Rep -->|derived from| Acc
+    Rep -->|derived from| Fund
     Admin -->|owns| FT
     Admin -->|owns| BR
     Admin -->|owns| Acc
+    Admin -->|owns| Fund
     Admin -->|owns| Bud
     Admin -->|owns| Don
     Admin -->|owns| GA
