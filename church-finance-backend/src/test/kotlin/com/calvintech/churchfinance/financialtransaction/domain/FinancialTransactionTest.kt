@@ -158,4 +158,18 @@ class FinancialTransactionTest {
             buildCategorisation(amount = BigDecimal.TEN, description = "   ")
         }
     }
+
+    @Test
+    fun `should throw when categorisation amount is zero`() {
+        assertThrows<IllegalArgumentException> {
+            buildCategorisation(amount = BigDecimal.ZERO)
+        }
+    }
+
+    @Test
+    fun `should throw when categorisation amount is negative`() {
+        assertThrows<IllegalArgumentException> {
+            buildCategorisation(amount = BigDecimal.TEN.negate())
+        }
+    }
 }

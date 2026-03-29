@@ -11,6 +11,10 @@ data class FinancialTransactionCategorisation(
     val description: String?,
 ) {
     init {
+        require(amount > BigDecimal.ZERO) {
+            "Amount must be positive"
+        }
+
         description?.let {
             require(it.isNotBlank()) {
                 "Description must not be blank"

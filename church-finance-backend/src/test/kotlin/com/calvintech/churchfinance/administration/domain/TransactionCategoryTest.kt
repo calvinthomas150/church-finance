@@ -8,7 +8,7 @@ import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDateTime
 
-class TransactionCategoryTests {
+class TransactionCategoryTest {
     private fun buildTransactionCategory(
         churchId: Ulid = UlidCreator.getUlid(),
         name: String = "OFFERINGS",

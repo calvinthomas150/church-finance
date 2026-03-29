@@ -28,8 +28,8 @@ class FundTest {
 
     @Test
     fun `should create a closed fund with zero balance`() {
-        val account = buildFund(BigDecimal.ZERO, fundName = "My Fund")
-        assertNotNull(account)
+        val fund = buildFund(BigDecimal.ZERO, fundName = "My Fund")
+        assertNotNull(fund)
     }
 
     @Test
