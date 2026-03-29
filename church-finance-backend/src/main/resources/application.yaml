@@ -1,6 +1,16 @@
 spring:
   application:
     name: Church Finance
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/church_finance}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    schemas: church_finance
+    locations: classpath:db/migration
 
 springdoc:
   swagger-ui:

@@ -2,9 +2,9 @@ package com.calvintech.churchfinance
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
+import org.springframework.boot.testcontainers.context.ImportTestcontainers
 
-@Import(TestcontainersConfiguration::class)
+@ImportTestcontainers(TestcontainersConfiguration::class)
 @SpringBootTest
 class ChurchFinanceApplicationTests {
     @Test

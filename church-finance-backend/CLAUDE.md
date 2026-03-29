@@ -31,21 +31,21 @@ The project follows Domain-Driven Design organized by aggregate. Each aggregate 
 └── service/       # Application services
 ```
 
-**Aggregates** (directory names): `account`, `administration`, `budget`, `donor`, `financialtransaction`, `fund`, `giftaid`, `reconciliation`, `report`
+**Aggregates** (directory names): `account`, `administration`, `budget`, `donor`, `financialtransaction`, `fund`, `giftaid`, `reconciliation`, `report`, `user`
 
-Cross-aggregate shared types (e.g. `FinancialTransactionType`) live in `shared/domain/`.
+Cross-aggregate shared types (e.g. `FinancialTransactionType`, `Money`) live in `shared/domain/`.
 
 The domain model was derived from event storming — see `src/documents/domain-model.md` for the full aggregate and event definitions.
 
 ## Key Design Decisions
 
-- **Multi-tenancy**: All entities carry a `churchId: Ulid` to scope data per church
+- **Multi-tenancy**: Most entities carry a `churchId: Ulid` to scope data per church. Exception: `User` is church-independent — church membership is modelled via `ChurchMembership`
 - **ULID identifiers**: Uses `com.github.f4b6a3:ulid-creator` for distributed-friendly IDs
 - **Financial precision**: All monetary amounts use `BigDecimal`. Use `compareTo` (not `==`) when comparing BigDecimal values — Kotlin's `==` delegates to `equals()` which is scale-sensitive (`BigDecimal("0.00") != BigDecimal.ZERO`)
 - **Domain invariants in init blocks**: Entities enforce business rules at construction time (e.g. `FinancialTransaction` validates categorisation amounts sum to total; `Fund` and `BankAccount` enforce zero balance when closed)
 - **BankAccount vs Fund**: `BankAccount` (in `account`) = physical bank account; `Fund` = virtual allocation of money for a purpose. A `FinancialTransaction` references a `BankAccount` (where money moved) while its categorisations reference a `Fund` (how it's allocated)
 - **API docs**: SpringDoc OpenAPI at `/v3/api-docs` and `/swagger-ui.html`
-- **Flyway migrations**: `src/main/resources/db/migration/` (not yet populated)
+- **Flyway migrations**: `src/main/resources/db/migration/`, schema `church_finance`. Hibernate `ddl-auto` is set to `validate` — all schema changes must go through Flyway
 - **Dependency versions**: Most dependency versions are managed by the Spring BOM via `io.spring.dependency-management`. Only explicitly versioned dependencies (in `build.gradle.kts`) should be bumped directly. The `dependencyUpdates` task will also report transitive/BOM-managed dependencies — these update when their parent plugin or BOM is updated, not independently
 
 ## Testing Conventions
@@ -53,7 +53,7 @@ The domain model was derived from event storming — see `src/documents/domain-m
 - Domain unit tests validate invariants using JUnit 5 (`assertThrows`, `assertNotNull`)
 - Each test class has private builder helper methods (e.g. `buildFund()`) with default parameters for constructing test entities
 - Nullable string fields should reject blank values — use `isNotBlank()`, not `isNotEmpty()`
-- Integration tests use `@SpringBootTest` with `@ImportTestcontainers` — see `TestcontainersConfiguration.kt` for the shared PostgreSQL container setup
+- Integration tests use `@SpringBootTest` with `@ImportTestcontainers(TestcontainersConfiguration::class)` — see `TestcontainersConfiguration.kt` for the shared PostgreSQL container setup (uses `org.testcontainers.postgresql.PostgreSQLContainer`, not the deprecated `org.testcontainers.containers` package)
 
 ## Git Conventions
 
