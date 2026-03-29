@@ -38,3 +38,11 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Potentially Sensitive Config files ###
+application-local.yaml
+application-dev.yaml
+application-qa.yaml
+application-prod.yaml
+.env
+

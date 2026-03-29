@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "f=$(jq -er '.tool_input.file_path // .tool_input.filePath') || { echo 'BLOCK: Unable to determine target file path' >&2; exit 1; }; if echo \"$f\" | grep -qiE '\\.(env|secret|credential|key)|\\.env\\.|application-(secret|prod|staging)\\.(properties|ya?ml)|credentials\\.(properties|ya?ml)|bootstrap-(secret|prod)\\.(properties|ya?ml)|secret\\.properties|keystore|truststore|\\.jks|\\.p12|\\.pem'; then echo 'BLOCK: Refusing to edit sensitive file' >&2; exit 1; fi",
+            "command": "f=$(jq -er '.tool_input.file_path // .tool_input.filePath') || { echo 'BLOCK: Unable to determine target file path' >&2; exit 1; }; if echo \"$f\" | grep -qiE '\\.(env|secret|credential|key)|\\.env\\.|application-(secret|local|dev|qa|prod|staging)\\.(properties|ya?ml)$|credentials\\.(properties|ya?ml)$|bootstrap-(secret|prod)\\.(properties|ya?ml)$|secret\\.properties$|keystore|truststore|\\.jks|\\.p12|\\.pem'; then echo 'BLOCK: Refusing to edit sensitive file' >&2; exit 1; fi",
             "timeout": 5,
             "statusMessage": "Checking for sensitive files..."
           }

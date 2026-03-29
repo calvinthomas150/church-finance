@@ -17,8 +17,9 @@ class DatabaseInfrastructureTest {
     @Test
     fun `should start application context and run migrations`() {
         dataSource.connection.use { conn ->
-            val rs = conn.metaData.getSchemas(null, "church_finance")
-            assertTrue(rs.next(), "church_finance schema should exist")
+            conn.metaData.getSchemas(null, "church_finance").use { rs ->
+                assertTrue(rs.next(), "church_finance schema should exist")
+            }
         }
     }
 }

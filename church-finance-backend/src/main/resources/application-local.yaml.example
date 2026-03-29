@@ -1,3 +1,5 @@
-DATABASE_URL=jdbc:postgresql://localhost:5432/church_finance
-DATABASE_USERNAME=
-DATABASE_PASSWORD=
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/church_finance
+    username:
+    password:
