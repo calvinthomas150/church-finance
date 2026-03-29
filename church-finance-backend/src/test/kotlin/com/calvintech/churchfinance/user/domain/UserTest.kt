@@ -38,7 +38,7 @@ class UserTest {
     }
 
     @Test
-    fun `should throw when creating a user with empty firstname`() {
+    fun `should throw when creating a user with blank firstname`() {
         assertThrows<IllegalArgumentException> {
             buildUser(firstName = "")
         }
@@ -49,7 +49,7 @@ class UserTest {
     }
 
     @Test
-    fun `should throw when creating a user with empty lastname`() {
+    fun `should throw when creating a user with blank lastname`() {
         assertThrows<IllegalArgumentException> {
             buildUser(lastName = "")
         }
