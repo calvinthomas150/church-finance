@@ -1,8 +1,8 @@
-package com.calvintech.churchfinance.user.persistence
+package com.calvintech.churchfinance.administration.persistence
 
 import com.calvintech.churchfinance.TestcontainersConfiguration
-import com.calvintech.churchfinance.user.domain.User
-import com.calvintech.churchfinance.user.domain.UserStatus
+import com.calvintech.churchfinance.administration.domain.Church
+import com.calvintech.churchfinance.administration.domain.ChurchStatus
 import com.github.f4b6a3.ulid.UlidCreator
 import jakarta.persistence.EntityManager
 import jakarta.transaction.Transactional
@@ -16,39 +16,36 @@ import kotlin.test.assertEquals
 
 @SpringBootTest
 @ImportTestcontainers(TestcontainersConfiguration::class)
-class UserPersistenceTest {
+class ChurchPersistenceTest {
     @Autowired
-    lateinit var userRepository: UserRepository
+    lateinit var churchRepository: ChurchRepository
 
     @Autowired
-    lateinit var userMapper: UserMapper
+    lateinit var churchMapper: ChurchMapper
 
     @Autowired
     lateinit var entityManager: EntityManager
 
     @Test
     @Transactional
-    fun `Should be able to persist and retrieve a user`() {
-        val user =
-            User(
+    fun `Should be able to persist and retrieve a church`() {
+        val church =
+            Church(
                 id = UlidCreator.getUlid(),
                 createdAt = Instant.now().truncatedTo(ChronoUnit.MICROS),
                 addedBy = UlidCreator.getUlid(),
-                email = "test@test.com",
-                firstName = "FirstName",
-                lastName = "LastName",
-                userStatus = UserStatus.ACTIVE,
-                isSystemAdmin = false,
+                name = "Grace Church",
+                status = ChurchStatus.ACTIVE,
             )
 
-        val userEntity = userMapper.toJpaEntity(user)
-        userRepository.save(userEntity)
+        val churchEntity = churchMapper.toJpaEntity(church)
+        churchRepository.save(churchEntity)
         entityManager.flush()
         entityManager.clear()
 
-        val retrievedUserEntity = userRepository.findById(userEntity.id).get()
-        val retrievedUser = userMapper.toDomain(retrievedUserEntity)
+        val retrievedEntity = churchRepository.findById(churchEntity.id).get()
+        val retrievedChurch = churchMapper.toDomain(retrievedEntity)
 
-        assertEquals(user, retrievedUser)
+        assertEquals(church, retrievedChurch)
     }
 }
