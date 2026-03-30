@@ -6,5 +6,6 @@ CREATE TABLE church_finance.users(
     first_name VARCHAR(255),
     last_name VARCHAR(255),
     user_status VARCHAR(20) NOT NULL,
-    is_system_admin BOOLEAN NOT NULL DEFAULT FALSE
+    is_system_admin BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT users_email_unique UNIQUE (email)
 );
