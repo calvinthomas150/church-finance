@@ -1,12 +1,12 @@
 package com.calvintech.churchfinance.fund.domain
 
 import com.github.f4b6a3.ulid.UlidCreator
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.Currency
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class FundTest {
     private fun buildFund(
@@ -17,7 +17,7 @@ class FundTest {
         Fund(
             id = UlidCreator.getUlid(),
             churchId = UlidCreator.getUlid(),
-            createdAt = LocalDateTime.now(),
+            createdAt = Instant.now(),
             addedBy = UlidCreator.getUlid(),
             fundName = fundName,
             fundType = FundType.RESTRICTED,
@@ -40,22 +40,22 @@ class FundTest {
 
     @Test
     fun `should throw when creating a closed fund with a non zero balance`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildFund(BigDecimal.ONE, fundName = "My Fund")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildFund(BigDecimal.ONE.negate(), fundName = "My Fund")
         }
     }
 
     @Test
     fun `should throw when creating a fund without a name`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildFund(fundName = "", fundStatus = FundStatus.OPEN)
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildFund(fundName = "   ", fundStatus = FundStatus.OPEN)
         }
     }

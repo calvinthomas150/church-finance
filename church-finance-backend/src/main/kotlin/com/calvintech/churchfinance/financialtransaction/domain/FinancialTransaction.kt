@@ -3,14 +3,14 @@ package com.calvintech.churchfinance.financialtransaction.domain
 import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
 import com.github.f4b6a3.ulid.Ulid
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.Currency
 
 data class FinancialTransaction(
     val id: Ulid,
     val churchId: Ulid,
-    val createdAt: LocalDateTime,
+    val createdAt: Instant,
     val addedBy: Ulid,
     val amount: BigDecimal,
     val currency: Currency,

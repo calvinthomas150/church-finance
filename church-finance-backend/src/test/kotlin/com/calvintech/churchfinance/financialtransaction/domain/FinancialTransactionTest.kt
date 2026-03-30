@@ -2,13 +2,13 @@ package com.calvintech.churchfinance.financialtransaction.domain
 
 import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
 import com.github.f4b6a3.ulid.UlidCreator
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.Currency
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class FinancialTransactionTest {
     private fun buildTransaction(
@@ -19,7 +19,7 @@ class FinancialTransactionTest {
     ) = FinancialTransaction(
         id = UlidCreator.getUlid(),
         churchId = UlidCreator.getUlid(),
-        createdAt = LocalDateTime.now(),
+        createdAt = Instant.now(),
         addedBy = UlidCreator.getUlid(),
         amount = amount,
         currency = Currency.getInstance("GBP"),
@@ -67,7 +67,7 @@ class FinancialTransactionTest {
         val expenses1 = buildCategorisation(amount.divide(BigDecimal.TWO))
         val expenses2 = buildCategorisation(amount.divide(BigDecimal.valueOf(4)))
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildTransaction(amount, listOf(expenses1, expenses2))
         }
     }
@@ -79,7 +79,7 @@ class FinancialTransactionTest {
         val expenses1 = buildCategorisation(amount)
         val expenses2 = buildCategorisation(amount.divide(BigDecimal.valueOf(4)))
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildTransaction(amount, listOf(expenses1, expenses2))
         }
     }
@@ -108,36 +108,36 @@ class FinancialTransactionTest {
 
     @Test
     fun `should throw when transaction amount is negative`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildTransaction(amount = BigDecimal.TEN.negate())
         }
     }
 
     @Test
     fun `should throw when transaction amount is zero`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildTransaction(amount = BigDecimal.ZERO)
         }
     }
 
     @Test
     fun `should throw when bank reference is blank`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildTransaction(bankReference = "")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildTransaction(bankReference = "   ")
         }
     }
 
     @Test
     fun `should throw when description is blank`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildTransaction(description = "")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildTransaction(description = "   ")
         }
     }
@@ -150,25 +150,25 @@ class FinancialTransactionTest {
 
     @Test
     fun `should throw when categorisation description is blank`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildCategorisation(amount = BigDecimal.TEN, description = "")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildCategorisation(amount = BigDecimal.TEN, description = "   ")
         }
     }
 
     @Test
     fun `should throw when categorisation amount is zero`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildCategorisation(amount = BigDecimal.ZERO)
         }
     }
 
     @Test
     fun `should throw when categorisation amount is negative`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildCategorisation(amount = BigDecimal.TEN.negate())
         }
     }

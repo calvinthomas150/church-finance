@@ -1,10 +1,10 @@
 package com.calvintech.churchfinance.administration.domain
 
 import com.github.f4b6a3.ulid.UlidCreator
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertThrows
-import java.time.LocalDateTime
+import java.time.Instant
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class ChurchMembershipTest {
     private fun buildMembership(roles: Set<ChurchRole> = setOf(ChurchRole.SUBMITTER)): ChurchMembership =
@@ -13,7 +13,7 @@ class ChurchMembershipTest {
             churchId = UlidCreator.getUlid(),
             userId = UlidCreator.getUlid(),
             addedBy = UlidCreator.getUlid(),
-            createdAt = LocalDateTime.now(),
+            createdAt = Instant.now(),
             roles = roles,
         )
 
@@ -31,7 +31,7 @@ class ChurchMembershipTest {
 
     @Test
     fun `should throw when creating a membership with no roles`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildMembership(roles = emptySet())
         }
     }

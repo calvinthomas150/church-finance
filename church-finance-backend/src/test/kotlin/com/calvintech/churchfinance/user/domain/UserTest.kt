@@ -1,10 +1,10 @@
 package com.calvintech.churchfinance.user.domain
 
 import com.github.f4b6a3.ulid.UlidCreator
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertThrows
-import java.time.LocalDateTime
+import java.time.Instant
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class UserTest {
     private fun buildUser(
@@ -16,7 +16,7 @@ class UserTest {
     ): User =
         User(
             id = UlidCreator.getUlid(),
-            createdAt = LocalDateTime.now(),
+            createdAt = Instant.now(),
             addedBy = UlidCreator.getUlid(),
             email = email,
             firstName = firstName,
@@ -39,48 +39,48 @@ class UserTest {
 
     @Test
     fun `should throw when creating a user with blank firstname`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildUser(firstName = "")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildUser(firstName = "   ")
         }
     }
 
     @Test
     fun `should throw when creating a user with blank lastname`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildUser(lastName = "")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildUser(lastName = "   ")
         }
     }
 
     @Test
     fun `should throw when creating a user where the email address is invalid`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildUser(email = "abcde")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildUser(email = "abcde@")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildUser(email = "abcde@xyz.")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildUser(email = ".com")
         }
     }
 
     @Test
     fun `should throw when creating a user where the email address is invalid and the first name is empty`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildUser(firstName = null, email = "abcde")
         }
     }
