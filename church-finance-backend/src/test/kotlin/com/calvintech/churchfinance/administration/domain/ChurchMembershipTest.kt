@@ -4,7 +4,7 @@ import com.github.f4b6a3.ulid.UlidCreator
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertThrows
-import java.time.LocalDateTime
+import java.time.Instant
 
 class ChurchMembershipTest {
     private fun buildMembership(roles: Set<ChurchRole> = setOf(ChurchRole.SUBMITTER)): ChurchMembership =
@@ -13,7 +13,7 @@ class ChurchMembershipTest {
             churchId = UlidCreator.getUlid(),
             userId = UlidCreator.getUlid(),
             addedBy = UlidCreator.getUlid(),
-            createdAt = LocalDateTime.now(),
+            createdAt = Instant.now(),
             roles = roles,
         )
 

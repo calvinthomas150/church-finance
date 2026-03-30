@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.Currency
 
 class FundTest {
@@ -17,7 +17,7 @@ class FundTest {
         Fund(
             id = UlidCreator.getUlid(),
             churchId = UlidCreator.getUlid(),
-            createdAt = LocalDateTime.now(),
+            createdAt = Instant.now(),
             addedBy = UlidCreator.getUlid(),
             fundName = fundName,
             fundType = FundType.RESTRICTED,

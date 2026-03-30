@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.Currency
 
 class FinancialTransactionTest {
@@ -19,7 +19,7 @@ class FinancialTransactionTest {
     ) = FinancialTransaction(
         id = UlidCreator.getUlid(),
         churchId = UlidCreator.getUlid(),
-        createdAt = LocalDateTime.now(),
+        createdAt = Instant.now(),
         addedBy = UlidCreator.getUlid(),
         amount = amount,
         currency = Currency.getInstance("GBP"),

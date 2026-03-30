@@ -1,11 +1,11 @@
 package com.calvintech.churchfinance.user.domain
 
 import com.github.f4b6a3.ulid.Ulid
-import java.time.LocalDateTime
+import java.time.Instant
 
 data class User(
     val id: Ulid,
-    val createdAt: LocalDateTime,
+    val createdAt: Instant,
     val addedBy: Ulid,
     val email: String,
     val firstName: String?,

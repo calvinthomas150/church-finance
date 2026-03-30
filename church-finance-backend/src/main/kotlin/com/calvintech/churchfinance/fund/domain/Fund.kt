@@ -2,13 +2,13 @@ package com.calvintech.churchfinance.fund.domain
 
 import com.github.f4b6a3.ulid.Ulid
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.Currency
 
 data class Fund(
     val id: Ulid,
     val churchId: Ulid,
-    val createdAt: LocalDateTime,
+    val createdAt: Instant,
     val addedBy: Ulid,
     val fundName: String,
     val fundType: FundType,
