@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 import java.time.Instant
 import java.util.UUID
 
@@ -22,4 +23,6 @@ class UserJpaEntity(
     @Enumerated(EnumType.STRING)
     var userStatus: UserStatus,
     var isSystemAdmin: Boolean,
+    @Version
+    var version: Long = 0,
 )

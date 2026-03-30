@@ -13,6 +13,7 @@ class ChurchMapper {
             addedBy = Ulid.from(entity.addedBy),
             name = entity.name,
             status = entity.status,
+            version = entity.version,
         )
 
     fun toJpaEntity(church: Church): ChurchJpaEntity =
@@ -22,5 +23,6 @@ class ChurchMapper {
             addedBy = church.addedBy.toUuid(),
             name = church.name,
             status = church.status,
+            version = church.version,
         )
 }

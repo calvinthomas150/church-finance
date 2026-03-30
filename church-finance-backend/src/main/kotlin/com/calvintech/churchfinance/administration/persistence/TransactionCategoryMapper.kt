@@ -14,6 +14,7 @@ class TransactionCategoryMapper {
             name = entity.name,
             addedBy = Ulid.from(entity.addedBy),
             transactionType = entity.transactionType,
+            version = entity.version,
         )
 
     fun toJpaEntity(category: TransactionCategory): TransactionCategoryJpaEntity =
@@ -24,5 +25,6 @@ class TransactionCategoryMapper {
             addedBy = category.addedBy.toUuid(),
             name = category.name,
             transactionType = category.transactionType,
+            version = category.version,
         )
 }

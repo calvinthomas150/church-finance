@@ -83,6 +83,8 @@ class ChurchMembershipPersistenceTest {
         val retrievedEntity = churchMembershipRepository.findById(membershipEntity.id).get()
         val retrievedMembership = churchMembershipMapper.toDomain(retrievedEntity)
 
-        assertEquals(membership, retrievedMembership)
+        // Hibernate bumps version to 1 on initial persist because @ElementCollection
+        // triggers an additional UPDATE on the parent entity when managing the collection table rows
+        assertEquals(membership.copy(version = 1), retrievedMembership)
     }
 }
