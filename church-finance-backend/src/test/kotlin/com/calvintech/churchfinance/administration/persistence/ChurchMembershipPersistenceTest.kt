@@ -9,6 +9,7 @@ import com.calvintech.churchfinance.user.persistence.UserJpaEntity
 import com.calvintech.churchfinance.user.persistence.UserRepository
 import com.github.f4b6a3.ulid.Ulid
 import com.github.f4b6a3.ulid.UlidCreator
+import jakarta.persistence.EntityManager
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -32,6 +33,9 @@ class ChurchMembershipPersistenceTest {
 
     @Autowired
     lateinit var userRepository: UserRepository
+
+    @Autowired
+    lateinit var entityManager: EntityManager
 
     @Test
     @Transactional
@@ -73,6 +77,8 @@ class ChurchMembershipPersistenceTest {
 
         val membershipEntity = churchMembershipMapper.toJpaEntity(membership)
         churchMembershipRepository.save(membershipEntity)
+        entityManager.flush()
+        entityManager.clear()
 
         val retrievedEntity = churchMembershipRepository.findById(membershipEntity.id).get()
         val retrievedMembership = churchMembershipMapper.toDomain(retrievedEntity)

@@ -4,6 +4,7 @@ import com.calvintech.churchfinance.TestcontainersConfiguration
 import com.calvintech.churchfinance.user.domain.User
 import com.calvintech.churchfinance.user.domain.UserStatus
 import com.github.f4b6a3.ulid.UlidCreator
+import jakarta.persistence.EntityManager
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -22,6 +23,9 @@ class UserPersistenceTest {
     @Autowired
     lateinit var userMapper: UserMapper
 
+    @Autowired
+    lateinit var entityManager: EntityManager
+
     @Test
     @Transactional
     fun `Should be able to persist and retrieve a user`() {
@@ -39,6 +43,8 @@ class UserPersistenceTest {
 
         val userEntity = userMapper.toJpaEntity(user)
         userRepository.save(userEntity)
+        entityManager.flush()
+        entityManager.clear()
 
         val retrievedUserEntity = userRepository.findById(userEntity.id).get()
         val retrievedUser = userMapper.toDomain(retrievedUserEntity)

@@ -6,6 +6,7 @@ import com.calvintech.churchfinance.administration.domain.TransactionCategory
 import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
 import com.github.f4b6a3.ulid.Ulid
 import com.github.f4b6a3.ulid.UlidCreator
+import jakarta.persistence.EntityManager
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -26,6 +27,9 @@ class TransactionCategoryPersistenceTest {
 
     @Autowired
     lateinit var churchRepository: ChurchRepository
+
+    @Autowired
+    lateinit var entityManager: EntityManager
 
     @Test
     @Transactional
@@ -54,6 +58,8 @@ class TransactionCategoryPersistenceTest {
 
         val categoryEntity = transactionCategoryMapper.toJpaEntity(category)
         transactionCategoryRepository.save(categoryEntity)
+        entityManager.flush()
+        entityManager.clear()
 
         val retrievedEntity = transactionCategoryRepository.findById(categoryEntity.id).get()
         val retrievedCategory = transactionCategoryMapper.toDomain(retrievedEntity)
