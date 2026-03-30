@@ -12,6 +12,7 @@ data class User(
     val lastName: String?,
     val userStatus: UserStatus,
     val isSystemAdmin: Boolean,
+    val version: Long = 0,
 ) {
     init {
         firstName?.let {

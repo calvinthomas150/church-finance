@@ -9,6 +9,7 @@ data class Church(
     val addedBy: Ulid,
     val name: String,
     val status: ChurchStatus,
+    val version: Long = 0,
 ) {
     init {
         require(name.isNotBlank()) {

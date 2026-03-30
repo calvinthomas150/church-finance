@@ -16,6 +16,7 @@ class UserMapper {
             lastName = entity.lastName,
             userStatus = entity.userStatus,
             isSystemAdmin = entity.isSystemAdmin,
+            version = entity.version,
         )
 
     fun toJpaEntity(user: User): UserJpaEntity =
@@ -28,5 +29,6 @@ class UserMapper {
             lastName = user.lastName,
             userStatus = user.userStatus,
             isSystemAdmin = user.isSystemAdmin,
+            version = user.version,
         )
 }

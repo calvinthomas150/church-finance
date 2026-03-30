@@ -14,6 +14,7 @@ class ChurchMembershipMapper {
             addedBy = Ulid.from(entity.addedBy),
             createdAt = entity.createdAt,
             roles = entity.roles,
+            version = entity.version,
         )
 
     fun toJpaEntity(membership: ChurchMembership): ChurchMembershipJpaEntity =
@@ -24,5 +25,6 @@ class ChurchMembershipMapper {
             addedBy = membership.addedBy.toUuid(),
             createdAt = membership.createdAt,
             roles = membership.roles.toMutableSet(),
+            version = membership.version,
         )
 }

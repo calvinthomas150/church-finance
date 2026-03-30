@@ -11,6 +11,7 @@ data class TransactionCategory(
     val addedBy: Ulid,
     val name: String,
     val transactionType: FinancialTransactionType,
+    val version: Long = 0,
 ) {
     init {
         require(name.isNotBlank()) {

@@ -10,6 +10,7 @@ data class ChurchMembership(
     val addedBy: Ulid,
     val createdAt: Instant,
     val roles: Set<ChurchRole>,
+    val version: Long = 0,
 ) {
     init {
         require(roles.isNotEmpty()) {
