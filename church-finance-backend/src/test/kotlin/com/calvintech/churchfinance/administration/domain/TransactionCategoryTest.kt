@@ -3,10 +3,10 @@ package com.calvintech.churchfinance.administration.domain
 import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
 import com.github.f4b6a3.ulid.Ulid
 import com.github.f4b6a3.ulid.UlidCreator
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertThrows
 import java.time.Instant
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class TransactionCategoryTest {
     private fun buildTransactionCategory(
@@ -29,11 +29,11 @@ class TransactionCategoryTest {
 
     @Test
     fun `should throw when name of category is empty`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildTransactionCategory(name = "")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildTransactionCategory(name = "   ")
         }
     }

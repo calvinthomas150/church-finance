@@ -1,10 +1,10 @@
 package com.calvintech.churchfinance.administration.domain
 
 import com.github.f4b6a3.ulid.UlidCreator
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertThrows
 import java.time.Instant
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class ChurchTest {
     private fun buildChurch(
@@ -33,11 +33,11 @@ class ChurchTest {
 
     @Test
     fun `should throw when creating a church with blank name`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildChurch(name = "")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildChurch(name = "   ")
         }
     }

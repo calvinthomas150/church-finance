@@ -5,13 +5,13 @@ import com.calvintech.churchfinance.user.domain.User
 import com.calvintech.churchfinance.user.domain.UserStatus
 import com.github.f4b6a3.ulid.UlidCreator
 import jakarta.transaction.Transactional
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.context.ImportTestcontainers
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @SpringBootTest
 @ImportTestcontainers(TestcontainersConfiguration::class)

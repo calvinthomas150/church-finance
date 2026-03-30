@@ -1,10 +1,10 @@
 package com.calvintech.churchfinance.shared.domain
 
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
 import java.util.Currency
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class MoneyTest {
     private val gbp = Currency.getInstance("GBP")
@@ -31,7 +31,7 @@ class MoneyTest {
 
     @Test
     fun `should throw when scale exceeds 2`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             Money(BigDecimal("100.001"), gbp)
         }
     }

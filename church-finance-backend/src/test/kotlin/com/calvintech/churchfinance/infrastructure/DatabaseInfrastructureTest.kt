@@ -1,12 +1,12 @@
 package com.calvintech.churchfinance.infrastructure
 
 import com.calvintech.churchfinance.TestcontainersConfiguration
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.context.ImportTestcontainers
 import javax.sql.DataSource
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 @SpringBootTest
 @ImportTestcontainers(TestcontainersConfiguration::class)

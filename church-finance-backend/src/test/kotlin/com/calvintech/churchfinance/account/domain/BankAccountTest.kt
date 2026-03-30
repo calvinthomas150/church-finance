@@ -1,13 +1,13 @@
 package com.calvintech.churchfinance.account.domain
 
 import com.github.f4b6a3.ulid.UlidCreator
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Currency
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class BankAccountTest {
     private fun buildAccount(
@@ -45,33 +45,33 @@ class BankAccountTest {
 
     @Test
     fun `should throw when creating a closed account with a non zero balance`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(currentBalance = BigDecimal.ONE)
         }
     }
 
     @Test
     fun `should throw when creating an account without a name`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(accountName = "")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(accountName = "   ")
         }
     }
 
     @Test
     fun `should throw when creating an account with a sort code not equal to 6 digits`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(sortCode = "1234567")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(sortCode = "12345")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(sortCode = "abcde1")
         }
     }
@@ -84,37 +84,37 @@ class BankAccountTest {
 
     @Test
     fun `should throw when sort code is blank`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(sortCode = "")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(sortCode = "   ")
         }
     }
 
     @Test
     fun `should throw when creating an account with a account number not equal to 8 or 9 digits`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(accountNumber = "0123456789")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(accountNumber = "1234567")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(accountNumber = "abcdefghi")
         }
     }
 
     @Test
     fun `should throw when account number is blank`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(accountNumber = "")
         }
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             buildAccount(accountNumber = "   ")
         }
     }
