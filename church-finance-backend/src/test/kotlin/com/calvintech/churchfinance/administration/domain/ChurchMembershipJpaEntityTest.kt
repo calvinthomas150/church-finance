@@ -6,7 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
-class ChurchMembershipTest {
+class ChurchMembershipJpaEntityTest {
     private fun buildMembership(roles: Set<ChurchRole> = setOf(ChurchRole.SUBMITTER)): ChurchMembership =
         ChurchMembership(
             id = UlidCreator.getUlid(),
