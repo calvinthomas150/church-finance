@@ -71,6 +71,8 @@ Flyway migration naming: `V{n}__{description}.sql` (double underscore). Schema: 
 ## Testing Conventions
 
 - Domain unit tests validate invariants using JUnit 5 (`assertThrows`, `assertNotNull`)
+- Service unit tests use MockK (`io.mockk:mockk`) to mock dependencies — use `@MockK` annotations with `MockKAnnotations.init(this)` in `@BeforeTest`
+- Controller integration tests use `@SpringBootTest` with `@AutoConfigureMockMvc` (from `org.springframework.boot.webmvc.test.autoconfigure` — Spring Boot 4 relocated this package)
 - Each test class has private builder helper methods (e.g. `buildFund()`) with default parameters for constructing test entities
 - Nullable string fields should reject blank values — use `isNotBlank()`, not `isNotEmpty()`
 - Integration tests use `@SpringBootTest` with `@ImportTestcontainers(TestcontainersConfiguration::class)` — see `TestcontainersConfiguration.kt` for the shared PostgreSQL container setup (uses `org.testcontainers.postgresql.PostgreSQLContainer`, not the deprecated `org.testcontainers.containers` package)
