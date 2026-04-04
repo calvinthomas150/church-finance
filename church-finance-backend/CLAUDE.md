@@ -17,6 +17,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Tests use Testcontainers with PostgreSQL — Docker must be running.
 
+## Environment Setup
+
+Required environment variables (or use `application-local.yaml`):
+- `DATABASE_URL` — PostgreSQL JDBC URL (default: `jdbc:postgresql://localhost:5432/church_finance`)
+- `DATABASE_USERNAME` — database user
+- `DATABASE_PASSWORD` — database password
+
+Copy `src/main/resources/application-local.yaml.example` to `application-local.yaml` and fill in local values, then run with `--spring.profiles.active=local`.
+
 ## Architecture
 
 **Spring Boot 4.0.5 / Kotlin 2.3.20 / Java 21 / PostgreSQL / Flyway**
@@ -31,11 +40,22 @@ The project follows Domain-Driven Design organized by aggregate. Each aggregate 
 └── service/       # Application services
 ```
 
-**Aggregates** (directory names): `account`, `administration`, `budget`, `donor`, `financialtransaction`, `fund`, `giftaid`, `reconciliation`, `report`, `user`
+**Aggregates** (directory names): `account`, `administration`, `budget`, `donor`, `financialtransaction`, `fund`, `giftaid`, `reconciliation`, `report`, `user` (note: `shared` is not an aggregate)
 
 Cross-aggregate shared types (e.g. `FinancialTransactionType`, `Money`) live in `shared/domain/`.
 
 The domain model was derived from event storming — see `src/documents/domain-model.md` for the full aggregate and event definitions.
+
+## Persistence Conventions
+
+Each persisted aggregate has a consistent structure in its `persistence/` package:
+- `*JpaEntity` — JPA entity class, uses `UUID` for IDs and `@Version` for optimistic locking
+- `*Mapper` — `@Component` that converts between domain entities (`Ulid` IDs) and JPA entities (`UUID` IDs) via `toDomain()`/`toJpaEntity()`
+- `*Repository` — Spring Data `JpaRepository` interface
+
+Domain entities carry a `version: Long` field (default `0`) for optimistic locking — always map it through the persistence layer.
+
+Flyway migration naming: `V{n}__{description}.sql` (double underscore). Schema: `church_finance`.
 
 ## Key Design Decisions
 
