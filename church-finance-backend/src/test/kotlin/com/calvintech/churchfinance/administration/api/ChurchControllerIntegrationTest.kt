@@ -60,13 +60,14 @@ class ChurchControllerIntegrationTest {
     }
 
     @Test
-    fun `POST should return 400 when name is blank`() {
+    fun `POST should return 400 with error message when name is blank`() {
         mockMvc
             .perform(
                 post("/api/v1/churches")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"name": ""}"""),
             ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.message").exists())
     }
 
     @Test
@@ -117,7 +118,7 @@ class ChurchControllerIntegrationTest {
     }
 
     @Test
-    fun `PUT should return 400 when name is blank`() {
+    fun `PUT should return 400 with error message when name is blank`() {
         val body = createChurch("Grace Church")
         val id = extractId(body)
 
@@ -127,6 +128,7 @@ class ChurchControllerIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"name": "", "version": 0}"""),
             ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.message").exists())
     }
 
     @Test
@@ -178,6 +180,27 @@ class ChurchControllerIntegrationTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(id))
             .andExpect(jsonPath("$.status").value(ChurchStatus.ACTIVE.name))
+    }
+
+    @Test
+    fun `PUT should return 409 when version is stale`() {
+        val body = createChurch("Grace Church")
+        val id = extractId(body)
+
+        mockMvc
+            .perform(
+                put("/api/v1/churches/$id")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "First Update", "version": 0}"""),
+            ).andExpect(status().isOk)
+
+        mockMvc
+            .perform(
+                put("/api/v1/churches/$id")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "Stale Update", "version": 0}"""),
+            ).andExpect(status().isConflict)
+            .andExpect(jsonPath("$.message").value("Someone else has made a change. Please refresh and try again."))
     }
 
     @Test
