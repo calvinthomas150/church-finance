@@ -76,6 +76,7 @@ Flyway migration naming: `V{n}__{description}.sql` (double underscore). Schema: 
 - Each test class has private builder helper methods (e.g. `buildFund()`) with default parameters for constructing test entities
 - Nullable string fields should reject blank values — use `isNotBlank()`, not `isNotEmpty()`
 - Integration tests use `@SpringBootTest` with `@ImportTestcontainers(TestcontainersConfiguration::class)` — see `TestcontainersConfiguration.kt` for the shared PostgreSQL container setup (uses `org.testcontainers.postgresql.PostgreSQLContainer`, not the deprecated `org.testcontainers.containers` package)
+- **Spring profile**: Tests run with the `test` profile (set via `systemProperty` in `build.gradle.kts`) — some components like `StubCurrentUserProvider` are scoped to `local`/`test` profiles only
 
 ## Git Conventions
 

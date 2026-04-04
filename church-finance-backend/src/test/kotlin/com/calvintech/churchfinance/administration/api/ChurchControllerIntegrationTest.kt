@@ -30,6 +30,8 @@ class ChurchControllerIntegrationTest {
 
     private fun extractId(responseBody: String): String = objectMapper.readTree(responseBody).get("id").asString()
 
+    private fun extractVersion(responseBody: String): String = objectMapper.readTree(responseBody).get("version").asString()
+
     private fun createChurch(name: String = "Grace Church"): String {
         val result =
             mockMvc
@@ -143,9 +145,10 @@ class ChurchControllerIntegrationTest {
     fun `PATCH deactivate should set status to INACTIVE`() {
         val body = createChurch("Grace Church")
         val id = extractId(body)
+        val version = extractVersion(body)
 
         mockMvc
-            .perform(patch("/api/v1/churches/$id/deactivate"))
+            .perform(patch("/api/v1/churches/$id/deactivate?version=$version"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(id))
             .andExpect(jsonPath("$.status").value(ChurchStatus.INACTIVE.name))
@@ -154,9 +157,10 @@ class ChurchControllerIntegrationTest {
     @Test
     fun `PATCH deactivate should return error for unknown id`() {
         val unknownId = UUID.randomUUID()
+        val version = 0
 
         mockMvc
-            .perform(patch("/api/v1/churches/$unknownId/deactivate"))
+            .perform(patch("/api/v1/churches/$unknownId/deactivate?version=$version"))
             .andExpect(status().isNotFound)
     }
 
@@ -165,10 +169,12 @@ class ChurchControllerIntegrationTest {
         val body = createChurch("Grace Church")
         val id = extractId(body)
 
-        mockMvc.perform(patch("/api/v1/churches/$id/deactivate"))
+        val deactivateResult = mockMvc.perform(patch("/api/v1/churches/$id/deactivate?version=0")).andReturn()
+
+        val version = extractVersion(deactivateResult.response.contentAsString)
 
         mockMvc
-            .perform(patch("/api/v1/churches/$id/activate"))
+            .perform(patch("/api/v1/churches/$id/activate?version=$version"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(id))
             .andExpect(jsonPath("$.status").value(ChurchStatus.ACTIVE.name))
@@ -177,9 +183,10 @@ class ChurchControllerIntegrationTest {
     @Test
     fun `PATCH activate should return error for unknown id`() {
         val unknownId = UUID.randomUUID()
+        val version = 0
 
         mockMvc
-            .perform(patch("/api/v1/churches/$unknownId/activate"))
+            .perform(patch("/api/v1/churches/$unknownId/activate?version=$version"))
             .andExpect(status().isNotFound)
     }
 }

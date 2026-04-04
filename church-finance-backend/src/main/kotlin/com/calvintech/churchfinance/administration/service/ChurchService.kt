@@ -16,9 +16,9 @@ import java.util.UUID
 
 @Service
 class ChurchService(
-    val churchMapper: ChurchMapper,
-    val churchRepository: ChurchRepository,
-    val userProvider: CurrentUserProvider,
+    private val churchMapper: ChurchMapper,
+    private val churchRepository: ChurchRepository,
+    private val userProvider: CurrentUserProvider,
 ) {
     fun create(createChurchRequest: CreateChurchRequest): ChurchResponse {
         val church =
@@ -56,15 +56,21 @@ class ChurchService(
         return saveAndRespond(updated)
     }
 
-    fun deactivate(id: UUID): ChurchResponse {
+    fun deactivate(
+        id: UUID,
+        version: Long,
+    ): ChurchResponse {
         val church = findChurch(id)
-        val updated = church.copy(status = ChurchStatus.INACTIVE)
+        val updated = church.copy(status = ChurchStatus.INACTIVE, version = version)
         return saveAndRespond(updated)
     }
 
-    fun activate(id: UUID): ChurchResponse {
+    fun activate(
+        id: UUID,
+        version: Long,
+    ): ChurchResponse {
         val church = findChurch(id)
-        val updated = church.copy(status = ChurchStatus.ACTIVE)
+        val updated = church.copy(status = ChurchStatus.ACTIVE, version = version)
         return saveAndRespond(updated)
     }
 

@@ -163,7 +163,7 @@ class ChurchServiceTest {
         every { churchRepository.save(deactivatedJpaEntity) } returns deactivatedJpaEntity
         every { churchMapper.toDomain(deactivatedJpaEntity) } returns deactivatedChurch
 
-        val response = churchService.deactivate(church.id.toUuid())
+        val response = churchService.deactivate(church.id.toUuid(), church.version)
 
         assertEquals(church.id.toUuid(), response.id)
         assertEquals(ChurchStatus.INACTIVE, response.status)
@@ -176,7 +176,7 @@ class ChurchServiceTest {
         every { churchRepository.findById(unknownId) } returns Optional.empty()
 
         assertFailsWith<ChurchNotFoundException> {
-            churchService.deactivate(unknownId)
+            churchService.deactivate(unknownId, 0)
         }
     }
 
@@ -193,7 +193,7 @@ class ChurchServiceTest {
         every { churchRepository.save(activatedJpaEntity) } returns activatedJpaEntity
         every { churchMapper.toDomain(activatedJpaEntity) } returns activatedChurch
 
-        val response = churchService.activate(church.id.toUuid())
+        val response = churchService.activate(church.id.toUuid(), church.version)
 
         assertEquals(church.id.toUuid(), response.id)
         assertEquals(ChurchStatus.ACTIVE, response.status)
@@ -206,7 +206,7 @@ class ChurchServiceTest {
         every { churchRepository.findById(unknownId) } returns Optional.empty()
 
         assertFailsWith<ChurchNotFoundException> {
-            churchService.activate(unknownId)
+            churchService.activate(unknownId, 0)
         }
     }
 }
