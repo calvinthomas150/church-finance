@@ -17,6 +17,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Tests use Testcontainers with PostgreSQL — Docker must be running.
 
+## Environment Setup
+
+Required environment variables (or use `application-local.yaml`):
+- `DATABASE_URL` — PostgreSQL JDBC URL (default: `jdbc:postgresql://localhost:5432/church_finance`)
+- `DATABASE_USERNAME` — database user
+- `DATABASE_PASSWORD` — database password
+
+Copy `src/main/resources/application-local.yaml.example` to `application-local.yaml` and fill in local values, then run with `--spring.profiles.active=local`.
+
 ## Architecture
 
 **Spring Boot 4.0.5 / Kotlin 2.3.20 / Java 21 / PostgreSQL / Flyway**
@@ -31,11 +40,22 @@ The project follows Domain-Driven Design organized by aggregate. Each aggregate 
 └── service/       # Application services
 ```
 
-**Aggregates** (directory names): `account`, `administration`, `budget`, `donor`, `financialtransaction`, `fund`, `giftaid`, `reconciliation`, `report`, `user`
+**Aggregates** (directory names): `account`, `administration`, `budget`, `donor`, `financialtransaction`, `fund`, `giftaid`, `reconciliation`, `report`, `user` (note: `shared` is not an aggregate)
 
 Cross-aggregate shared types (e.g. `FinancialTransactionType`, `Money`) live in `shared/domain/`.
 
 The domain model was derived from event storming — see `src/documents/domain-model.md` for the full aggregate and event definitions.
+
+## Persistence Conventions
+
+Each persisted aggregate has a consistent structure in its `persistence/` package:
+- `*JpaEntity` — JPA entity class, uses `UUID` for IDs and `@Version` for optimistic locking
+- `*Mapper` — `@Component` that converts between domain entities (`Ulid` IDs) and JPA entities (`UUID` IDs) via `toDomain()`/`toJpaEntity()`
+- `*Repository` — Spring Data `JpaRepository` interface
+
+Domain entities carry a `version: Long` field (default `0`) for optimistic locking — always map it through the persistence layer.
+
+Flyway migration naming: `V{n}__{description}.sql` (double underscore). Schema: `church_finance`.
 
 ## Key Design Decisions
 
@@ -51,9 +71,12 @@ The domain model was derived from event storming — see `src/documents/domain-m
 ## Testing Conventions
 
 - Domain unit tests validate invariants using JUnit 5 (`assertThrows`, `assertNotNull`)
+- Service unit tests use MockK (`io.mockk:mockk`) to mock dependencies — use `@MockK` annotations with `MockKAnnotations.init(this)` in `@BeforeTest`
+- Controller integration tests use `@SpringBootTest` with `@AutoConfigureMockMvc` (from `org.springframework.boot.webmvc.test.autoconfigure` — Spring Boot 4 relocated this package)
 - Each test class has private builder helper methods (e.g. `buildFund()`) with default parameters for constructing test entities
 - Nullable string fields should reject blank values — use `isNotBlank()`, not `isNotEmpty()`
 - Integration tests use `@SpringBootTest` with `@ImportTestcontainers(TestcontainersConfiguration::class)` — see `TestcontainersConfiguration.kt` for the shared PostgreSQL container setup (uses `org.testcontainers.postgresql.PostgreSQLContainer`, not the deprecated `org.testcontainers.containers` package)
+- **Spring profile**: Tests run with the `test` profile (set via `systemProperty` in `build.gradle.kts`) — some components like `StubCurrentUserProvider` are scoped to `local`/`test` profiles only
 
 ## Git Conventions
 
