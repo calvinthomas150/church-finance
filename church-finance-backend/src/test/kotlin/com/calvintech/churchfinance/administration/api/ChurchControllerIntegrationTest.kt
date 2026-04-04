@@ -171,7 +171,11 @@ class ChurchControllerIntegrationTest {
         val body = createChurch("Grace Church")
         val id = extractId(body)
 
-        val deactivateResult = mockMvc.perform(patch("/api/v1/churches/$id/deactivate?version=0")).andReturn()
+        val deactivateResult =
+            mockMvc
+                .perform(patch("/api/v1/churches/$id/deactivate?version=0"))
+                .andExpect(status().isOk)
+                .andReturn()
 
         val version = extractVersion(deactivateResult.response.contentAsString)
 
