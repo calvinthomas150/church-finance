@@ -34,7 +34,7 @@ class ChurchPersistenceTest {
                 id = UlidCreator.getUlid(),
                 createdAt = Instant.now().truncatedTo(ChronoUnit.MICROS),
                 addedBy = UlidCreator.getUlid(),
-                name = "Grace Church",
+                name = "Our Saviour Lutheran Church",
                 status = ChurchStatus.ACTIVE,
             )
 

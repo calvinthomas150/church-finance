@@ -25,7 +25,7 @@ class TransactionCategoryIntegrationTest {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
-    private fun createChurch(name: String = "Grace Church"): String {
+    private fun createChurch(name: String = "Our Saviour Lutheran Church"): String {
         val result =
             mockMvc
                 .perform(
