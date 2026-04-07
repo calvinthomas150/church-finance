@@ -42,7 +42,7 @@ class TransactionCategoryIntegrationTest {
         val churchId = UUID.fromString(createChurch())
         mockMvc
             .perform(
-                post("/api/v1/transaction-categories/{id}", churchId)
+                post("/api/v1/churches/{churchId}/transaction-categories", churchId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"name": "Offerings", "type": "INCOME"}"""),
             ).andExpect(status().isCreated)

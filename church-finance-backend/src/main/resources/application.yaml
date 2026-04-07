@@ -2,7 +2,7 @@ spring:
   application:
     name: Church Finance
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/church_finance}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/app}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
   jpa:

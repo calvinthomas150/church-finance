@@ -1,5 +1,5 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/church_finance
-    username:
-    password:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/app}
+    username: ${DATABASE_USERNAME:}
+    password: ${DATABASE_PASSWORD:}
