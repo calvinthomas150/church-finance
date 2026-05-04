@@ -1,11 +1,11 @@
 plugins {
-    kotlin("jvm") version "2.3.20"
-    kotlin("plugin.spring") version "2.3.20"
-    id("org.springframework.boot") version "4.0.5"
+    kotlin("jvm") version "2.3.21"
+    kotlin("plugin.spring") version "2.3.21"
+    id("org.springframework.boot") version "4.0.6"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
-    id("com.github.ben-manes.versions") version "0.53.0"
-    kotlin("plugin.jpa") version "2.3.20"
+    id("com.github.ben-manes.versions") version "0.54.0"
+    kotlin("plugin.jpa") version "2.3.21"
 }
 
 group = "com.calvintech"
@@ -29,7 +29,7 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
     implementation("com.github.f4b6a3:ulid-creator:5.2.4")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
@@ -37,7 +37,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("io.mockk:mockk:1.14.4")
+    testImplementation("io.mockk:mockk:1.14.9")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
