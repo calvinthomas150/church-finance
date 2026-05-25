@@ -25,6 +25,16 @@ class TransactionCategoryIntegrationTest {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
+    private fun postCategory(
+        churchId: UUID,
+        name: String,
+        type: String,
+    ) = mockMvc.perform(
+        post("/api/v1/churches/{churchId}/transaction-categories", churchId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""{"name": "$name", "type": "$type"}"""),
+    )
+
     private fun createChurch(name: String = "Our Saviour Lutheran Church"): String {
         val result =
             mockMvc
@@ -63,5 +73,23 @@ class TransactionCategoryIntegrationTest {
             .andExpect(jsonPath("$.status").value("ACTIVE"))
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.version").value(0))
+    }
+
+    @Test
+    fun `POST should return 409 when name already exists for the same type in the same church`() {
+        val churchId = UUID.fromString(createChurch())
+        postCategory(churchId, "Tithes", "INCOME").andExpect(status().isCreated)
+
+        postCategory(churchId, "Tithes", "INCOME")
+            .andExpect(status().isConflict)
+            .andExpect(jsonPath("$.message").exists())
+    }
+
+    @Test
+    fun `POST should return 201 when name exists but for a different type`() {
+        val churchId = UUID.fromString(createChurch())
+        postCategory(churchId, "Tithes", "INCOME").andExpect(status().isCreated)
+
+        postCategory(churchId, "Tithes", "EXPENDITURE").andExpect(status().isCreated)
     }
 }

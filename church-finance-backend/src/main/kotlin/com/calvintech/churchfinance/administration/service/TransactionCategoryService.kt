@@ -4,9 +4,11 @@ import com.calvintech.churchfinance.administration.api.CreateTransactionCategory
 import com.calvintech.churchfinance.administration.api.TransactionCategoryResponse
 import com.calvintech.churchfinance.administration.domain.ChurchNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
+import com.calvintech.churchfinance.administration.domain.TransactionCategoryNameConflictException
 import com.calvintech.churchfinance.administration.persistence.ChurchRepository
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryMapper
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryRepository
+import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
 import com.calvintech.churchfinance.shared.service.CurrentUserProvider
 import com.github.f4b6a3.ulid.Ulid
 import com.github.f4b6a3.ulid.UlidCreator
@@ -26,6 +28,12 @@ class TransactionCategoryService(
         createTransactionCategoryRequest: CreateTransactionCategoryRequest,
     ): TransactionCategoryResponse {
         requireChurchExists(churchId)
+        requireNameAvailable(
+            churchId = churchId,
+            name = createTransactionCategoryRequest.name,
+            type = createTransactionCategoryRequest.type,
+            excludingId = null,
+        )
 
         val transactionCategory =
             TransactionCategory(
@@ -43,6 +51,23 @@ class TransactionCategoryService(
     private fun requireChurchExists(churchId: UUID) {
         if (!churchRepository.existsById(churchId)) {
             throw ChurchNotFoundException(churchId)
+        }
+    }
+
+    private fun requireNameAvailable(
+        churchId: UUID,
+        name: String,
+        type: FinancialTransactionType,
+        excludingId: UUID?,
+    ) {
+        val conflict =
+            repository.findByChurchIdAndNameAndTransactionType(
+                churchId = churchId,
+                name = name,
+                transactionType = type,
+            )
+        if (conflict != null && conflict.id != excludingId) {
+            throw TransactionCategoryNameConflictException(churchId, name, type)
         }
     }
 

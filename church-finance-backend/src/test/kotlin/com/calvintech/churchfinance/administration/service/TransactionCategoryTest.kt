@@ -3,6 +3,7 @@ package com.calvintech.churchfinance.administration.service
 import com.calvintech.churchfinance.administration.api.CreateTransactionCategoryRequest
 import com.calvintech.churchfinance.administration.domain.ChurchNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
+import com.calvintech.churchfinance.administration.domain.TransactionCategoryNameConflictException
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryStatus
 import com.calvintech.churchfinance.administration.persistence.ChurchRepository
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryJpaEntity
@@ -84,6 +85,13 @@ class TransactionCategoryTest {
         val savedTransactionCategory = buildTransactionCategory(name = "Offerings", transactionType = FinancialTransactionType.INCOME)
 
         every { churchRepository.existsById(churchId) } returns true
+        every {
+            repository.findByChurchIdAndNameAndTransactionType(
+                churchId = churchId,
+                name = "Offerings",
+                transactionType = FinancialTransactionType.INCOME,
+            )
+        } returns null
         every { userProvider.getCurrentUserId() } returns currentUserId
         every { mapper.toJpaEntity(capture(transactionCategorySlot)) } returns savedEntity
         every { repository.save(savedEntity) } returns savedEntity
@@ -108,6 +116,28 @@ class TransactionCategoryTest {
         every { churchRepository.existsById(churchId) } returns false
 
         assertFailsWith<ChurchNotFoundException> {
+            transactionCategoryService.create(
+                churchId,
+                CreateTransactionCategoryRequest(name = "Offerings", type = FinancialTransactionType.INCOME),
+            )
+        }
+    }
+
+    @Test
+    fun `create throws TransactionCategoryNameConflictException when (church, name, type) already exists`() {
+        val churchId = UUID.randomUUID()
+        val existing = buildTransactionCategoryJpaEntity(name = "Offerings", transactionType = FinancialTransactionType.INCOME)
+
+        every { churchRepository.existsById(churchId) } returns true
+        every {
+            repository.findByChurchIdAndNameAndTransactionType(
+                churchId = churchId,
+                name = "Offerings",
+                transactionType = FinancialTransactionType.INCOME,
+            )
+        } returns existing
+
+        assertFailsWith<TransactionCategoryNameConflictException> {
             transactionCategoryService.create(
                 churchId,
                 CreateTransactionCategoryRequest(name = "Offerings", type = FinancialTransactionType.INCOME),
