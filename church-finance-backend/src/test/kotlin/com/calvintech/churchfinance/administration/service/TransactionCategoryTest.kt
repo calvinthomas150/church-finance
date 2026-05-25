@@ -4,7 +4,9 @@ import com.calvintech.churchfinance.administration.api.CreateTransactionCategory
 import com.calvintech.churchfinance.administration.domain.ChurchNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryNameConflictException
+import com.calvintech.churchfinance.administration.domain.TransactionCategoryNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryStatus
+import com.github.f4b6a3.ulid.Ulid
 import com.calvintech.churchfinance.administration.persistence.ChurchRepository
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryJpaEntity
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryMapper
@@ -142,6 +144,54 @@ class TransactionCategoryTest {
                 churchId,
                 CreateTransactionCategoryRequest(name = "Offerings", type = FinancialTransactionType.INCOME),
             )
+        }
+    }
+
+    @Test
+    fun `get returns category when it belongs to the church`() {
+        val churchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val entity =
+            buildTransactionCategoryJpaEntity(id = id, name = "Offerings", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = churchId }
+        val domain = buildTransactionCategory(name = "Offerings", transactionType = FinancialTransactionType.INCOME)
+
+        every { repository.findById(id) } returns java.util.Optional.of(entity)
+        every { mapper.toDomain(entity) } returns domain.copy(churchId = Ulid.from(churchId))
+
+        val response = transactionCategoryService.get(churchId, id)
+
+        assertEquals("Offerings", response.name)
+    }
+
+    @Test
+    fun `get throws TransactionCategoryNotFoundException when id unknown`() {
+        val churchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        every { repository.findById(id) } returns java.util.Optional.empty()
+
+        assertFailsWith<TransactionCategoryNotFoundException> {
+            transactionCategoryService.get(churchId, id)
+        }
+    }
+
+    @Test
+    fun `get throws TransactionCategoryNotFoundException when category belongs to a different church`() {
+        val urlChurchId = UUID.randomUUID()
+        val actualChurchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val entity =
+            buildTransactionCategoryJpaEntity(id = id, name = "Offerings", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = actualChurchId }
+        val domain =
+            buildTransactionCategory(name = "Offerings", transactionType = FinancialTransactionType.INCOME)
+                .copy(churchId = Ulid.from(actualChurchId))
+
+        every { repository.findById(id) } returns java.util.Optional.of(entity)
+        every { mapper.toDomain(entity) } returns domain
+
+        assertFailsWith<TransactionCategoryNotFoundException> {
+            transactionCategoryService.get(urlChurchId, id)
         }
     }
 }

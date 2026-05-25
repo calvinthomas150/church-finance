@@ -8,6 +8,7 @@ import org.springframework.boot.testcontainers.context.ImportTestcontainers
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -34,6 +35,20 @@ class TransactionCategoryIntegrationTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content("""{"name": "$name", "type": "$type"}"""),
     )
+
+    private fun createCategoryAndReturnBody(
+        churchId: UUID,
+        name: String = "Offerings",
+        type: String = "INCOME",
+    ): String =
+        mockMvc.perform(
+            post("/api/v1/churches/{churchId}/transaction-categories", churchId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"name": "$name", "type": "$type"}"""),
+        ).andExpect(status().isCreated)
+            .andReturn().response.contentAsString
+
+    private fun extractId(body: String): String = objectMapper.readTree(body).get("id").asString()
 
     private fun createChurch(name: String = "Our Saviour Lutheran Church"): String {
         val result =
