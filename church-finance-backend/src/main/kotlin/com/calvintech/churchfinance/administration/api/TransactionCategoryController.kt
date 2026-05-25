@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -88,4 +89,25 @@ class TransactionCategoryController(
         @Parameter(description = "Identifier of the transaction category", required = true)
         @PathVariable id: UUID,
     ): TransactionCategoryResponse = transactionCategoryService.get(churchId, id)
+
+    @PutMapping("/{id}")
+    @Operation(
+        summary = "Update a transaction category",
+        description = "Updates the category's name. Type is immutable. Requires the current `version` for optimistic locking.",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Transaction category updated"),
+            ApiResponse(responseCode = "400", description = "Validation failure", content = []),
+            ApiResponse(responseCode = "404", description = "Transaction category not found", content = []),
+            ApiResponse(responseCode = "409", description = "Name conflict or optimistic locking conflict", content = []),
+        ],
+    )
+    fun update(
+        @Parameter(description = "Identifier of the church", required = true)
+        @PathVariable churchId: UUID,
+        @Parameter(description = "Identifier of the transaction category", required = true)
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: UpdateTransactionCategoryRequest,
+    ): TransactionCategoryResponse = transactionCategoryService.update(churchId, id, request)
 }

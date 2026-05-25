@@ -2,6 +2,7 @@ package com.calvintech.churchfinance.administration.service
 
 import com.calvintech.churchfinance.administration.api.CreateTransactionCategoryRequest
 import com.calvintech.churchfinance.administration.api.TransactionCategoryStatusFilter
+import com.calvintech.churchfinance.administration.api.UpdateTransactionCategoryRequest
 import com.calvintech.churchfinance.administration.domain.ChurchNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryNameConflictException
@@ -19,6 +20,7 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.slot
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertNotNull
 import java.time.Instant
 import java.util.UUID
@@ -193,6 +195,155 @@ class TransactionCategoryTest {
 
         assertFailsWith<TransactionCategoryNotFoundException> {
             transactionCategoryService.get(urlChurchId, id)
+        }
+    }
+
+    @Test
+    fun `update changes name and returns updated response`() {
+        val churchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val existing =
+            buildTransactionCategoryJpaEntity(id = id, name = "Old", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = churchId }
+        val existingDomain =
+            buildTransactionCategory(name = "Old", transactionType = FinancialTransactionType.INCOME)
+                .copy(id = Ulid.from(id), churchId = Ulid.from(churchId))
+        val saved =
+            buildTransactionCategoryJpaEntity(id = id, name = "New", transactionType = FinancialTransactionType.INCOME)
+                .also {
+                    it.churchId = churchId
+                    it.version = 1
+                }
+        val savedDomain =
+            buildTransactionCategory(name = "New", transactionType = FinancialTransactionType.INCOME)
+                .copy(id = Ulid.from(id), churchId = Ulid.from(churchId), version = 1)
+
+        every { repository.findById(id) } returns java.util.Optional.of(existing)
+        every { mapper.toDomain(existing) } returns existingDomain
+        every {
+            repository.findByChurchIdAndNameAndTransactionType(churchId, "New", FinancialTransactionType.INCOME)
+        } returns null
+        every { mapper.toJpaEntity(any()) } returns saved
+        every { repository.save(saved) } returns saved
+        every { mapper.toDomain(saved) } returns savedDomain
+
+        val response =
+            transactionCategoryService.update(
+                churchId = churchId,
+                id = id,
+                req = UpdateTransactionCategoryRequest(name = "New", version = 0),
+            )
+
+        assertEquals("New", response.name)
+    }
+
+    @Test
+    fun `update skips uniqueness check when name is unchanged`() {
+        val churchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val existing =
+            buildTransactionCategoryJpaEntity(id = id, name = "Same", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = churchId }
+        val existingDomain =
+            buildTransactionCategory(name = "Same", transactionType = FinancialTransactionType.INCOME)
+                .copy(id = Ulid.from(id), churchId = Ulid.from(churchId))
+
+        every { repository.findById(id) } returns java.util.Optional.of(existing)
+        every { mapper.toDomain(existing) } returns existingDomain
+        every { mapper.toJpaEntity(any()) } returns existing
+        every { repository.save(existing) } returns existing
+        every { mapper.toDomain(existing) } returns existingDomain
+
+        transactionCategoryService.update(
+            churchId = churchId,
+            id = id,
+            req = UpdateTransactionCategoryRequest(name = "Same", version = 0),
+        )
+
+        verify(exactly = 0) {
+            repository.findByChurchIdAndNameAndTransactionType(any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `update throws conflict when new name collides with another category of the same type`() {
+        val churchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val collidingId = UUID.randomUUID()
+        val existing =
+            buildTransactionCategoryJpaEntity(id = id, name = "Old", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = churchId }
+        val existingDomain =
+            buildTransactionCategory(name = "Old", transactionType = FinancialTransactionType.INCOME)
+                .copy(id = Ulid.from(id), churchId = Ulid.from(churchId))
+        val colliding =
+            buildTransactionCategoryJpaEntity(id = collidingId, name = "Taken", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = churchId }
+
+        every { repository.findById(id) } returns java.util.Optional.of(existing)
+        every { mapper.toDomain(existing) } returns existingDomain
+        every {
+            repository.findByChurchIdAndNameAndTransactionType(churchId, "Taken", FinancialTransactionType.INCOME)
+        } returns colliding
+
+        assertFailsWith<TransactionCategoryNameConflictException> {
+            transactionCategoryService.update(
+                churchId = churchId,
+                id = id,
+                req = UpdateTransactionCategoryRequest(name = "Taken", version = 0),
+            )
+        }
+    }
+
+    @Test
+    fun `update permits keeping the same name (excludingId guard)`() {
+        val churchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val existing =
+            buildTransactionCategoryJpaEntity(id = id, name = "Old", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = churchId }
+        val existingDomain =
+            buildTransactionCategory(name = "Old", transactionType = FinancialTransactionType.INCOME)
+                .copy(id = Ulid.from(id), churchId = Ulid.from(churchId))
+
+        every { repository.findById(id) } returns java.util.Optional.of(existing)
+        every { mapper.toDomain(existing) } returns existingDomain
+        // findBy is NOT called because name is unchanged; covered by the "skips uniqueness check" test.
+        every { mapper.toJpaEntity(any()) } returns existing
+        every { repository.save(existing) } returns existing
+        every { mapper.toDomain(existing) } returns existingDomain
+
+        val response =
+            transactionCategoryService.update(
+                churchId = churchId,
+                id = id,
+                req = UpdateTransactionCategoryRequest(name = "Old", version = 0),
+            )
+
+        assertEquals("Old", response.name)
+    }
+
+    @Test
+    fun `update throws not-found on tenant mismatch`() {
+        val urlChurchId = UUID.randomUUID()
+        val actualChurchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val existing =
+            buildTransactionCategoryJpaEntity(id = id, name = "X", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = actualChurchId }
+        val existingDomain =
+            buildTransactionCategory(name = "X", transactionType = FinancialTransactionType.INCOME)
+                .copy(id = Ulid.from(id), churchId = Ulid.from(actualChurchId))
+
+        every { repository.findById(id) } returns java.util.Optional.of(existing)
+        every { mapper.toDomain(existing) } returns existingDomain
+
+        assertFailsWith<TransactionCategoryNotFoundException> {
+            transactionCategoryService.update(
+                churchId = urlChurchId,
+                id = id,
+                req = UpdateTransactionCategoryRequest(name = "Y", version = 0),
+            )
         }
     }
 

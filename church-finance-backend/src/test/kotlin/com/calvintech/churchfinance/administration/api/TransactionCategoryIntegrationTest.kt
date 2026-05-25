@@ -11,6 +11,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import tools.jackson.databind.ObjectMapper
@@ -194,6 +195,97 @@ class TransactionCategoryIntegrationTest {
             ).andExpect(status().isOk)
             .andExpect(jsonPath("$.length()").value(1))
             .andExpect(jsonPath("$[0].name").value("Tithes"))
+    }
+
+    @Test
+    fun `PUT updates name and returns 200`() {
+        val churchId = UUID.fromString(createChurch())
+        val id = extractId(createCategoryAndReturnBody(churchId, "Old", "INCOME"))
+
+        mockMvc
+            .perform(
+                put("/api/v1/churches/{churchId}/transaction-categories/{id}", churchId, id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "New", "version": 0}"""),
+            ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.name").value("New"))
+    }
+
+    @Test
+    fun `PUT returns 400 on blank name`() {
+        val churchId = UUID.fromString(createChurch())
+        val id = extractId(createCategoryAndReturnBody(churchId, "Old", "INCOME"))
+
+        mockMvc
+            .perform(
+                put("/api/v1/churches/{churchId}/transaction-categories/{id}", churchId, id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "", "version": 0}"""),
+            ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.message").exists())
+    }
+
+    @Test
+    fun `PUT returns 404 on unknown id`() {
+        val churchId = UUID.fromString(createChurch())
+        val unknownId = UUID.randomUUID()
+
+        mockMvc
+            .perform(
+                put("/api/v1/churches/{churchId}/transaction-categories/{id}", churchId, unknownId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "Anything", "version": 0}"""),
+            ).andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `PUT returns 404 on tenant mismatch`() {
+        val churchOne = UUID.fromString(createChurch("Church One"))
+        val churchTwo = UUID.fromString(createChurch("Church Two"))
+        val id = extractId(createCategoryAndReturnBody(churchOne, "Tithes", "INCOME"))
+
+        mockMvc
+            .perform(
+                put("/api/v1/churches/{churchId}/transaction-categories/{id}", churchTwo, id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "Renamed", "version": 0}"""),
+            ).andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `PUT returns 409 when stale version`() {
+        val churchId = UUID.fromString(createChurch())
+        val id = extractId(createCategoryAndReturnBody(churchId, "Old", "INCOME"))
+
+        mockMvc
+            .perform(
+                put("/api/v1/churches/{churchId}/transaction-categories/{id}", churchId, id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "First Update", "version": 0}"""),
+            ).andExpect(status().isOk)
+
+        mockMvc
+            .perform(
+                put("/api/v1/churches/{churchId}/transaction-categories/{id}", churchId, id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "Stale Update", "version": 0}"""),
+            ).andExpect(status().isConflict)
+            .andExpect(jsonPath("$.message").value("Someone else has made a change. Please refresh and try again."))
+    }
+
+    @Test
+    fun `PUT returns 409 when new name collides with another category of the same type`() {
+        val churchId = UUID.fromString(createChurch())
+        createCategoryAndReturnBody(churchId, "Taken", "INCOME")
+        val id = extractId(createCategoryAndReturnBody(churchId, "Other", "INCOME"))
+
+        mockMvc
+            .perform(
+                put("/api/v1/churches/{churchId}/transaction-categories/{id}", churchId, id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "Taken", "version": 0}"""),
+            ).andExpect(status().isConflict)
+            .andExpect(jsonPath("$.message").exists())
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.calvintech.churchfinance.administration.service
 import com.calvintech.churchfinance.administration.api.CreateTransactionCategoryRequest
 import com.calvintech.churchfinance.administration.api.TransactionCategoryResponse
 import com.calvintech.churchfinance.administration.api.TransactionCategoryStatusFilter
+import com.calvintech.churchfinance.administration.api.UpdateTransactionCategoryRequest
 import com.calvintech.churchfinance.administration.domain.ChurchNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryNameConflictException
@@ -54,6 +55,24 @@ class TransactionCategoryService(
         churchId: UUID,
         id: UUID,
     ): TransactionCategoryResponse = toResponse(findCategoryScopedToChurch(churchId, id))
+
+    fun update(
+        churchId: UUID,
+        id: UUID,
+        req: UpdateTransactionCategoryRequest,
+    ): TransactionCategoryResponse {
+        val existing = findCategoryScopedToChurch(churchId, id)
+        if (existing.name != req.name) {
+            requireNameAvailable(
+                churchId = churchId,
+                name = req.name,
+                type = existing.transactionType,
+                excludingId = id,
+            )
+        }
+        val updated = existing.copy(name = req.name, version = req.version)
+        return saveAndRespond(updated)
+    }
 
     fun list(
         churchId: UUID,
