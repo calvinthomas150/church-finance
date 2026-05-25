@@ -41,12 +41,14 @@ class TransactionCategoryIntegrationTest {
         name: String = "Offerings",
         type: String = "INCOME",
     ): String =
-        mockMvc.perform(
-            post("/api/v1/churches/{churchId}/transaction-categories", churchId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name": "$name", "type": "$type"}"""),
-        ).andExpect(status().isCreated)
-            .andReturn().response.contentAsString
+        mockMvc
+            .perform(
+                post("/api/v1/churches/{churchId}/transaction-categories", churchId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "$name", "type": "$type"}"""),
+            ).andExpect(status().isCreated)
+            .andReturn()
+            .response.contentAsString
 
     private fun extractId(body: String): String = objectMapper.readTree(body).get("id").asString()
 
@@ -106,5 +108,40 @@ class TransactionCategoryIntegrationTest {
         postCategory(churchId, "Tithes", "INCOME").andExpect(status().isCreated)
 
         postCategory(churchId, "Tithes", "EXPENDITURE").andExpect(status().isCreated)
+    }
+
+    @Test
+    fun `GET by id returns the category`() {
+        val churchId = UUID.fromString(createChurch())
+        val id = extractId(createCategoryAndReturnBody(churchId, "Tithes", "INCOME"))
+
+        mockMvc
+            .perform(get("/api/v1/churches/{churchId}/transaction-categories/{id}", churchId, id))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").value(id))
+            .andExpect(jsonPath("$.name").value("Tithes"))
+            .andExpect(jsonPath("$.type").value("INCOME"))
+            .andExpect(jsonPath("$.status").value("ACTIVE"))
+    }
+
+    @Test
+    fun `GET by id returns 404 when category does not exist`() {
+        val churchId = UUID.fromString(createChurch())
+        val unknownId = UUID.randomUUID()
+
+        mockMvc
+            .perform(get("/api/v1/churches/{churchId}/transaction-categories/{id}", churchId, unknownId))
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `GET by id returns 404 when category belongs to a different church`() {
+        val churchOne = UUID.fromString(createChurch("Church One"))
+        val churchTwo = UUID.fromString(createChurch("Church Two"))
+        val id = extractId(createCategoryAndReturnBody(churchOne, "Tithes", "INCOME"))
+
+        mockMvc
+            .perform(get("/api/v1/churches/{churchId}/transaction-categories/{id}", churchTwo, id))
+            .andExpect(status().isNotFound)
     }
 }

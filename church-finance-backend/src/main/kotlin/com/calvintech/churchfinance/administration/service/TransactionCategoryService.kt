@@ -5,6 +5,7 @@ import com.calvintech.churchfinance.administration.api.TransactionCategoryRespon
 import com.calvintech.churchfinance.administration.domain.ChurchNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryNameConflictException
+import com.calvintech.churchfinance.administration.domain.TransactionCategoryNotFoundException
 import com.calvintech.churchfinance.administration.persistence.ChurchRepository
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryMapper
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryRepository
@@ -46,6 +47,23 @@ class TransactionCategoryService(
             )
 
         return saveAndRespond(transactionCategory)
+    }
+
+    fun get(
+        churchId: UUID,
+        id: UUID,
+    ): TransactionCategoryResponse = toResponse(findCategoryScopedToChurch(churchId, id))
+
+    private fun findCategoryScopedToChurch(
+        churchId: UUID,
+        id: UUID,
+    ): TransactionCategory {
+        val entity = repository.findById(id).orElseThrow { TransactionCategoryNotFoundException(id) }
+        val domain = mapper.toDomain(entity)
+        if (domain.churchId.toUuid() != churchId) {
+            throw TransactionCategoryNotFoundException(id)
+        }
+        return domain
     }
 
     private fun requireChurchExists(churchId: UUID) {
