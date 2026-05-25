@@ -32,7 +32,7 @@ class ChurchControllerIntegrationTest {
 
     private fun extractVersion(responseBody: String): String = objectMapper.readTree(responseBody).get("version").asString()
 
-    private fun createChurch(name: String = "Grace Church"): String {
+    private fun createChurch(name: String = "Our Saviour Lutheran Church"): String {
         val result =
             mockMvc
                 .perform(
@@ -51,9 +51,9 @@ class ChurchControllerIntegrationTest {
             .perform(
                 post("/api/v1/churches")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"name": "Grace Church"}"""),
+                    .content("""{"name": "Our Saviour Lutheran Church"}"""),
             ).andExpect(status().isCreated)
-            .andExpect(jsonPath("$.name").value("Grace Church"))
+            .andExpect(jsonPath("$.name").value("Our Saviour Lutheran Church"))
             .andExpect(jsonPath("$.status").value(ChurchStatus.ACTIVE.name))
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.version").value(0))
@@ -82,14 +82,14 @@ class ChurchControllerIntegrationTest {
 
     @Test
     fun `GET should return an existing church`() {
-        val body = createChurch("Grace Church")
+        val body = createChurch("Our Saviour Lutheran Church")
         val id = extractId(body)
 
         mockMvc
             .perform(get("/api/v1/churches/$id"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(id))
-            .andExpect(jsonPath("$.name").value("Grace Church"))
+            .andExpect(jsonPath("$.name").value("Our Saviour Lutheran Church"))
             .andExpect(jsonPath("$.status").value(ChurchStatus.ACTIVE.name))
     }
 
@@ -104,7 +104,7 @@ class ChurchControllerIntegrationTest {
 
     @Test
     fun `PUT should update the church name`() {
-        val body = createChurch("Grace Church")
+        val body = createChurch("Our Saviour Lutheran Church")
         val id = extractId(body)
 
         mockMvc
@@ -119,7 +119,7 @@ class ChurchControllerIntegrationTest {
 
     @Test
     fun `PUT should return 400 with error message when name is blank`() {
-        val body = createChurch("Grace Church")
+        val body = createChurch("Our Saviour Lutheran Church")
         val id = extractId(body)
 
         mockMvc
@@ -145,7 +145,7 @@ class ChurchControllerIntegrationTest {
 
     @Test
     fun `PATCH deactivate should set status to INACTIVE`() {
-        val body = createChurch("Grace Church")
+        val body = createChurch("Our Saviour Lutheran Church")
         val id = extractId(body)
         val version = extractVersion(body)
 
@@ -168,7 +168,7 @@ class ChurchControllerIntegrationTest {
 
     @Test
     fun `PATCH activate should set status to ACTIVE`() {
-        val body = createChurch("Grace Church")
+        val body = createChurch("Our Saviour Lutheran Church")
         val id = extractId(body)
 
         val deactivateResult =
@@ -188,7 +188,7 @@ class ChurchControllerIntegrationTest {
 
     @Test
     fun `PUT should return 409 when version is stale`() {
-        val body = createChurch("Grace Church")
+        val body = createChurch("Our Saviour Lutheran Church")
         val id = extractId(body)
 
         mockMvc

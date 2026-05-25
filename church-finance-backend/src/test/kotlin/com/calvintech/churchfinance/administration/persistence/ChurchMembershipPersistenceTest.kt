@@ -47,7 +47,7 @@ class ChurchMembershipPersistenceTest {
                 id = UlidCreator.getUlid().toUuid(),
                 createdAt = now,
                 addedBy = UlidCreator.getUlid().toUuid(),
-                name = "Grace Church",
+                name = "Our Saviour Lutheran Church",
                 status = ChurchStatus.ACTIVE,
             )
         churchRepository.save(church)

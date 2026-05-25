@@ -11,6 +11,7 @@ data class TransactionCategory(
     val addedBy: Ulid,
     val name: String,
     val transactionType: FinancialTransactionType,
+    val status: TransactionCategoryStatus = TransactionCategoryStatus.ACTIVE,
     val version: Long = 0,
 ) {
     init {

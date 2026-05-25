@@ -42,7 +42,7 @@ class ChurchServiceTest {
     }
 
     private fun buildChurch(
-        name: String = "Grace Church",
+        name: String = "Our Saviour Lutheran Church",
         status: ChurchStatus = ChurchStatus.ACTIVE,
         version: Long = 0L,
     ): Church =
@@ -57,7 +57,7 @@ class ChurchServiceTest {
 
     private fun buildChurchJpaEntity(
         id: UUID = UUID.randomUUID(),
-        name: String = "Grace Church",
+        name: String = "Our Saviour Lutheran Church",
         status: ChurchStatus = ChurchStatus.ACTIVE,
         version: Long = 0L,
     ): ChurchJpaEntity =
@@ -74,17 +74,17 @@ class ChurchServiceTest {
     fun `create should persist and return a new church`() {
         val currentUserId = UlidCreator.getUlid()
         val churchSlot = slot<Church>()
-        val savedEntity = buildChurchJpaEntity(name = "Grace Church")
-        val savedChurch = buildChurch(name = "Grace Church")
+        val savedEntity = buildChurchJpaEntity(name = "Our Saviour Lutheran Church")
+        val savedChurch = buildChurch(name = "Our Saviour Lutheran Church")
 
         every { userProvider.getCurrentUserId() } returns currentUserId
         every { churchMapper.toJpaEntity(capture(churchSlot)) } returns savedEntity
         every { churchRepository.save(savedEntity) } returns savedEntity
         every { churchMapper.toDomain(savedEntity) } returns savedChurch
 
-        val response = churchService.create(CreateChurchRequest(name = "Grace Church"))
+        val response = churchService.create(CreateChurchRequest(name = "Our Saviour Lutheran Church"))
 
-        assertEquals("Grace Church", response.name)
+        assertEquals("Our Saviour Lutheran Church", response.name)
         assertEquals(ChurchStatus.ACTIVE, response.status)
         assertNotNull(response.id)
         assertEquals(currentUserId, churchSlot.captured.addedBy)
@@ -92,8 +92,8 @@ class ChurchServiceTest {
 
     @Test
     fun `get should return an existing church`() {
-        val church = buildChurch(name = "Grace Church")
-        val jpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "Grace Church")
+        val church = buildChurch(name = "Our Saviour Lutheran Church")
+        val jpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "Our Saviour Lutheran Church")
 
         every { churchRepository.findById(church.id.toUuid()) } returns Optional.of(jpaEntity)
         every { churchMapper.toDomain(jpaEntity) } returns church
@@ -101,7 +101,7 @@ class ChurchServiceTest {
         val response = churchService.get(church.id.toUuid())
 
         assertEquals(church.id.toUuid(), response.id)
-        assertEquals("Grace Church", response.name)
+        assertEquals("Our Saviour Lutheran Church", response.name)
         assertEquals(ChurchStatus.ACTIVE, response.status)
     }
 
@@ -118,8 +118,8 @@ class ChurchServiceTest {
 
     @Test
     fun `update should change the church name`() {
-        val church = buildChurch(name = "Grace Church", version = 1L)
-        val jpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "Grace Church", version = 1L)
+        val church = buildChurch(name = "Our Saviour Lutheran Church", version = 1L)
+        val jpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "Our Saviour Lutheran Church", version = 1L)
         val updatedChurch = church.copy(name = "New Life Church", version = 1L)
         val updatedJpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "New Life Church", version = 1L)
 
@@ -152,10 +152,11 @@ class ChurchServiceTest {
 
     @Test
     fun `deactivate should set status to INACTIVE`() {
-        val church = buildChurch(name = "Grace Church")
-        val jpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "Grace Church")
+        val church = buildChurch(name = "Our Saviour Lutheran Church")
+        val jpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "Our Saviour Lutheran Church")
         val deactivatedChurch = church.copy(status = ChurchStatus.INACTIVE)
-        val deactivatedJpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "Grace Church", status = ChurchStatus.INACTIVE)
+        val deactivatedJpaEntity =
+            buildChurchJpaEntity(id = church.id.toUuid(), name = "Our Saviour Lutheran Church", status = ChurchStatus.INACTIVE)
 
         every { churchRepository.findById(church.id.toUuid()) } returns Optional.of(jpaEntity)
         every { churchMapper.toDomain(jpaEntity) } returns church
@@ -182,10 +183,11 @@ class ChurchServiceTest {
 
     @Test
     fun `activate should set status to ACTIVE`() {
-        val church = buildChurch(name = "Grace Church", status = ChurchStatus.INACTIVE)
-        val jpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "Grace Church", status = ChurchStatus.INACTIVE)
+        val church = buildChurch(name = "Our Saviour Lutheran Church", status = ChurchStatus.INACTIVE)
+        val jpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "Our Saviour Lutheran Church", status = ChurchStatus.INACTIVE)
         val activatedChurch = church.copy(status = ChurchStatus.ACTIVE)
-        val activatedJpaEntity = buildChurchJpaEntity(id = church.id.toUuid(), name = "Grace Church", status = ChurchStatus.ACTIVE)
+        val activatedJpaEntity =
+            buildChurchJpaEntity(id = church.id.toUuid(), name = "Our Saviour Lutheran Church", status = ChurchStatus.ACTIVE)
 
         every { churchRepository.findById(church.id.toUuid()) } returns Optional.of(jpaEntity)
         every { churchMapper.toDomain(jpaEntity) } returns church

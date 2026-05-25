@@ -14,6 +14,7 @@ class TransactionCategoryMapper {
             name = entity.name,
             addedBy = Ulid.from(entity.addedBy),
             transactionType = entity.transactionType,
+            status = entity.status,
             version = entity.version,
         )
 
@@ -25,6 +26,7 @@ class TransactionCategoryMapper {
             addedBy = category.addedBy.toUuid(),
             name = category.name,
             transactionType = category.transactionType,
+            status = category.status,
             version = category.version,
         )
 }

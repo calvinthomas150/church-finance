@@ -8,7 +8,7 @@ import kotlin.test.assertNotNull
 
 class ChurchTest {
     private fun buildChurch(
-        name: String = "Grace Church",
+        name: String = "Our Saviour Lutheran Church",
         status: ChurchStatus = ChurchStatus.ACTIVE,
     ): Church =
         Church(

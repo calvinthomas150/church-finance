@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("local", "test")
+@Profile("local", "test", "docker")
 class StubCurrentUserProvider : CurrentUserProvider {
     override fun getCurrentUserId(): Ulid = UlidCreator.getUlid()
 }

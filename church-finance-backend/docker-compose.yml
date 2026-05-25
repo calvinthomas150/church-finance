@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: church-finance-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_USER: ${POSTGRES_USER:-church_finance}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-church_finance}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - church-finance-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-church_finance} -d ${POSTGRES_DB:-app}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+    container_name: church-finance-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      DATABASE_URL: ${DATABASE_URL:-jdbc:postgresql://postgres:5432/${POSTGRES_DB:-app}}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-${POSTGRES_USER:-church_finance}}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-${POSTGRES_PASSWORD:-church_finance}}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+volumes:
+  church-finance-pgdata:

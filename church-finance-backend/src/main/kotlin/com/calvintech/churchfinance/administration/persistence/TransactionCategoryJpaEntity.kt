@@ -1,5 +1,6 @@
 package com.calvintech.churchfinance.administration.persistence
 
+import com.calvintech.churchfinance.administration.domain.TransactionCategoryStatus
 import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -21,6 +22,8 @@ class TransactionCategoryJpaEntity(
     var name: String,
     @Enumerated(EnumType.STRING)
     var transactionType: FinancialTransactionType,
+    @Enumerated(EnumType.STRING)
+    var status: TransactionCategoryStatus = TransactionCategoryStatus.ACTIVE,
     @Version
     var version: Long = 0,
 )
