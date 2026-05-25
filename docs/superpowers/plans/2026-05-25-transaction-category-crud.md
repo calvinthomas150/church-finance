@@ -67,7 +67,7 @@ Open `TransactionCategoryPersistenceTest.kt` and add (alongside the existing tes
 fun `unique constraint allows same name with different transaction_type`() {
     val churchId = persistChurch()
     val income = buildJpaEntity(churchId = churchId, name = "Tithes", type = FinancialTransactionType.INCOME)
-    val expense = buildJpaEntity(churchId = churchId, name = "Tithes", type = FinancialTransactionType.EXPENSE)
+    val expense = buildJpaEntity(churchId = churchId, name = "Tithes", type = FinancialTransactionType.EXPENDITURE)
 
     transactionCategoryRepository.saveAndFlush(income)
     transactionCategoryRepository.saveAndFlush(expense)
@@ -635,7 +635,7 @@ fun `findByChurchIdAndNameAndTransactionType returns null when type differs`() {
     val found = transactionCategoryRepository.findByChurchIdAndNameAndTransactionType(
         churchId = churchId,
         name = "Offerings",
-        transactionType = FinancialTransactionType.EXPENSE,
+        transactionType = FinancialTransactionType.EXPENDITURE,
     )
 
     assertNull(found)
@@ -649,7 +649,7 @@ fun `findAllByChurchId returns only categories for that church`() {
         buildJpaEntity(churchId = churchOne, name = "A", type = FinancialTransactionType.INCOME),
     )
     transactionCategoryRepository.saveAndFlush(
-        buildJpaEntity(churchId = churchOne, name = "B", type = FinancialTransactionType.EXPENSE),
+        buildJpaEntity(churchId = churchOne, name = "B", type = FinancialTransactionType.EXPENDITURE),
     )
     transactionCategoryRepository.saveAndFlush(
         buildJpaEntity(churchId = churchTwo, name = "C", type = FinancialTransactionType.INCOME),
@@ -957,7 +957,7 @@ fun `POST should return 201 when name exists but for a different type`() {
     val churchId = UUID.fromString(createChurch())
     postCategory(churchId, "Tithes", "INCOME").andExpect(status().isCreated)
 
-    postCategory(churchId, "Tithes", "EXPENSE").andExpect(status().isCreated)
+    postCategory(churchId, "Tithes", "EXPENDITURE").andExpect(status().isCreated)
 }
 ```
 
@@ -1331,13 +1331,13 @@ fun `list returns only ACTIVE categories sorted by name when no filters supplied
 fun `list with status=ALL returns all rows sorted by name`() {
     val churchId = UUID.randomUUID()
     val a = buildTransactionCategoryJpaEntity(name = "Z", transactionType = FinancialTransactionType.INCOME)
-    val b = buildTransactionCategoryJpaEntity(name = "A", transactionType = FinancialTransactionType.EXPENSE)
+    val b = buildTransactionCategoryJpaEntity(name = "A", transactionType = FinancialTransactionType.EXPENDITURE)
         .also { it.status = TransactionCategoryStatus.INACTIVE }
 
     every { churchRepository.existsById(churchId) } returns true
     every { repository.findAllByChurchId(churchId) } returns jpaList(a, b)
     every { mapper.toDomain(a) } returns buildTransactionCategory(name = "Z", transactionType = FinancialTransactionType.INCOME)
-    every { mapper.toDomain(b) } returns buildTransactionCategory(name = "A", transactionType = FinancialTransactionType.EXPENSE)
+    every { mapper.toDomain(b) } returns buildTransactionCategory(name = "A", transactionType = FinancialTransactionType.EXPENDITURE)
         .copy(status = TransactionCategoryStatus.INACTIVE)
 
     val result = transactionCategoryService.list(churchId, TransactionCategoryStatusFilter.ALL, type = null)
@@ -1367,12 +1367,12 @@ fun `list with status=INACTIVE returns only inactive`() {
 fun `list with type filter returns only matching type`() {
     val churchId = UUID.randomUUID()
     val income = buildTransactionCategoryJpaEntity(name = "X", transactionType = FinancialTransactionType.INCOME)
-    val expense = buildTransactionCategoryJpaEntity(name = "Y", transactionType = FinancialTransactionType.EXPENSE)
+    val expense = buildTransactionCategoryJpaEntity(name = "Y", transactionType = FinancialTransactionType.EXPENDITURE)
 
     every { churchRepository.existsById(churchId) } returns true
     every { repository.findAllByChurchId(churchId) } returns jpaList(income, expense)
     every { mapper.toDomain(income) } returns buildTransactionCategory(name = "X", transactionType = FinancialTransactionType.INCOME)
-    every { mapper.toDomain(expense) } returns buildTransactionCategory(name = "Y", transactionType = FinancialTransactionType.EXPENSE)
+    every { mapper.toDomain(expense) } returns buildTransactionCategory(name = "Y", transactionType = FinancialTransactionType.EXPENDITURE)
 
     val result = transactionCategoryService.list(churchId, TransactionCategoryStatusFilter.ACTIVE, type = FinancialTransactionType.INCOME)
 
@@ -1433,7 +1433,7 @@ fun `GET list returns 404 when church does not exist`() {
 fun `GET list with type=INCOME filters correctly`() {
     val churchId = UUID.fromString(createChurch())
     createCategoryAndReturnBody(churchId, "Tithes", "INCOME")
-    createCategoryAndReturnBody(churchId, "Bills", "EXPENSE")
+    createCategoryAndReturnBody(churchId, "Bills", "EXPENDITURE")
 
     mockMvc.perform(
         get("/api/v1/churches/{churchId}/transaction-categories", churchId)
@@ -1537,7 +1537,7 @@ Then add the endpoint method:
 @GetMapping
 @Operation(
     summary = "List transaction categories for a church",
-    description = "Returns categories for the supplied church. Defaults to ACTIVE only; use `status=ALL` or `status=INACTIVE` to broaden, and `type=INCOME` or `type=EXPENSE` to narrow.",
+    description = "Returns categories for the supplied church. Defaults to ACTIVE only; use `status=ALL` or `status=INACTIVE` to broaden, and `type=INCOME` or `type=EXPENDITURE` to narrow.",
 )
 @ApiResponses(
     value = [

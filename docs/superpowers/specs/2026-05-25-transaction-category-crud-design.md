@@ -15,7 +15,7 @@ Categories are church-level configuration that financial transactions will later
 
 1. Provide GET-by-id, list (with filters), PUT (update name), PATCH activate, PATCH deactivate — all scoped to a church.
 2. Add a `status` field (`ACTIVE` / `INACTIVE`) to support soft-deactivation.
-3. Replace the current `(church_id, name)` unique constraint with `(church_id, name, transaction_type)` to let the same name coexist as INCOME and EXPENSE.
+3. Replace the current `(church_id, name)` unique constraint with `(church_id, name, transaction_type)` to let the same name coexist as INCOME and EXPENDITURE.
 4. Fix the existing bug where creating a category for a non-existent church returns 500 (DB FK violation) instead of 404.
 5. Match the Church aggregate's layered conventions (domain-specific exceptions, optimistic locking, service-layer business rules, `ErrorResponse(message: String)` envelope).
 
@@ -34,7 +34,7 @@ Categories are church-level configuration that financial transactions will later
 | Decision | Choice | Rationale |
 |---|---|---|
 | Delete model | Soft: status enum + activate/deactivate | Mirrors Church; categories are reference data once transactions exist; switching later would be a breaking schema change. |
-| Uniqueness scope | `(church_id, name, transaction_type)` | Lets the same name (e.g. "Tithes") exist as both INCOME and EXPENSE in one church; matches the next-steps doc's stated rule. |
+| Uniqueness scope | `(church_id, name, transaction_type)` | Lets the same name (e.g. "Tithes") exist as both INCOME and EXPENDITURE in one church; matches the next-steps doc's stated rule. |
 | Inactive rows in uniqueness | Counted (no partial index) | Simpler to reason about; reactivation can never collide because the inactive row was already occupying the slot. |
 | Update scope | Name only; type immutable | Prevents future violation of the transaction-type-must-match-category-type invariant once transactions reference categories. To change type, deactivate and create new. |
 | List default | `ACTIVE` only | The common case for a treasurer UI; `?status=ALL` or `?status=INACTIVE` available; `?type=` filter composes. |
