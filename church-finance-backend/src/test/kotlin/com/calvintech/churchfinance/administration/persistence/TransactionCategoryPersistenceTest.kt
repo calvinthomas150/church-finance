@@ -3,6 +3,7 @@ package com.calvintech.churchfinance.administration.persistence
 import com.calvintech.churchfinance.TestcontainersConfiguration
 import com.calvintech.churchfinance.administration.domain.ChurchStatus
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
+import com.calvintech.churchfinance.administration.domain.TransactionCategoryStatus
 import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
 import com.github.f4b6a3.ulid.Ulid
 import com.github.f4b6a3.ulid.UlidCreator
@@ -68,6 +69,24 @@ class TransactionCategoryPersistenceTest {
         val retrievedCategory = transactionCategoryMapper.toDomain(retrievedEntity)
 
         assertEquals(category, retrievedCategory)
+        assertEquals(TransactionCategoryStatus.ACTIVE, retrievedCategory.status)
+    }
+
+    @Test
+    fun `status field round-trips through JPA`() {
+        val churchId = persistChurch()
+        val entity =
+            buildJpaEntity(churchId = churchId, name = "Offerings", type = FinancialTransactionType.INCOME)
+                .also { it.status = TransactionCategoryStatus.ACTIVE }
+
+        transactionCategoryRepository.saveAndFlush(entity)
+        val loaded = transactionCategoryRepository.findById(entity.id).orElseThrow()
+        assertEquals(TransactionCategoryStatus.ACTIVE, loaded.status)
+
+        loaded.status = TransactionCategoryStatus.INACTIVE
+        transactionCategoryRepository.saveAndFlush(loaded)
+        val reloaded = transactionCategoryRepository.findById(entity.id).orElseThrow()
+        assertEquals(TransactionCategoryStatus.INACTIVE, reloaded.status)
     }
 
     @Test
