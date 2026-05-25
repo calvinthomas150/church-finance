@@ -8,6 +8,7 @@ import com.calvintech.churchfinance.administration.domain.ChurchNotFoundExceptio
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryNameConflictException
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryNotFoundException
+import com.calvintech.churchfinance.administration.domain.TransactionCategoryStatus
 import com.calvintech.churchfinance.administration.persistence.ChurchRepository
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryMapper
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryRepository
@@ -71,6 +72,26 @@ class TransactionCategoryService(
             )
         }
         val updated = existing.copy(name = req.name, version = req.version)
+        return saveAndRespond(updated)
+    }
+
+    fun deactivate(
+        churchId: UUID,
+        id: UUID,
+        version: Long,
+    ): TransactionCategoryResponse {
+        val existing = findCategoryScopedToChurch(churchId, id)
+        val updated = existing.copy(status = TransactionCategoryStatus.INACTIVE, version = version)
+        return saveAndRespond(updated)
+    }
+
+    fun activate(
+        churchId: UUID,
+        id: UUID,
+        version: Long,
+    ): TransactionCategoryResponse {
+        val existing = findCategoryScopedToChurch(churchId, id)
+        val updated = existing.copy(status = TransactionCategoryStatus.ACTIVE, version = version)
         return saveAndRespond(updated)
     }
 

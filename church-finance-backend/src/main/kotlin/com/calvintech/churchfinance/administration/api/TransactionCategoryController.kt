@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -110,4 +111,46 @@ class TransactionCategoryController(
         @PathVariable id: UUID,
         @Valid @RequestBody request: UpdateTransactionCategoryRequest,
     ): TransactionCategoryResponse = transactionCategoryService.update(churchId, id, request)
+
+    @PatchMapping("/{id}/deactivate")
+    @Operation(
+        summary = "Deactivate a transaction category",
+        description = "Marks the category as INACTIVE. Requires the current `version` for optimistic locking.",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Category deactivated"),
+            ApiResponse(responseCode = "404", description = "Transaction category not found", content = []),
+            ApiResponse(responseCode = "409", description = "Optimistic locking conflict", content = []),
+        ],
+    )
+    fun deactivate(
+        @Parameter(description = "Identifier of the church", required = true)
+        @PathVariable churchId: UUID,
+        @Parameter(description = "Identifier of the transaction category", required = true)
+        @PathVariable id: UUID,
+        @Parameter(description = "Current version for optimistic locking", required = true)
+        @RequestParam version: Long,
+    ): TransactionCategoryResponse = transactionCategoryService.deactivate(churchId, id, version)
+
+    @PatchMapping("/{id}/activate")
+    @Operation(
+        summary = "Activate a transaction category",
+        description = "Marks the category as ACTIVE. Requires the current `version` for optimistic locking.",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Category activated"),
+            ApiResponse(responseCode = "404", description = "Transaction category not found", content = []),
+            ApiResponse(responseCode = "409", description = "Optimistic locking conflict", content = []),
+        ],
+    )
+    fun activate(
+        @Parameter(description = "Identifier of the church", required = true)
+        @PathVariable churchId: UUID,
+        @Parameter(description = "Identifier of the transaction category", required = true)
+        @PathVariable id: UUID,
+        @Parameter(description = "Current version for optimistic locking", required = true)
+        @RequestParam version: Long,
+    ): TransactionCategoryResponse = transactionCategoryService.activate(churchId, id, version)
 }

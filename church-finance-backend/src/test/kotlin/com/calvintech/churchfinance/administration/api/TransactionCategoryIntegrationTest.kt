@@ -2,7 +2,6 @@ package com.calvintech.churchfinance.administration.api
 
 import com.calvintech.churchfinance.TestcontainersConfiguration
 import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
-import org.hamcrest.Matchers.hasItems
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.context.ImportTestcontainers
@@ -10,6 +9,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -151,16 +151,19 @@ class TransactionCategoryIntegrationTest {
     fun `GET list returns only ACTIVE categories by default`() {
         val churchId = UUID.fromString(createChurch())
         val activeId = extractId(createCategoryAndReturnBody(churchId, "Tithes", "INCOME"))
-        val toDeactivateBody = createCategoryAndReturnBody(churchId, "Old", "INCOME")
-        val toDeactivateId = extractId(toDeactivateBody)
-        // We can't deactivate yet (Task 11). Insert it INACTIVE via PATCH route once it exists.
-        // For now, this test will be updated in Task 11 once deactivate exists.
-        // In this task, assert that the freshly created category appears in the default listing.
+        val toDeactivateId = extractId(createCategoryAndReturnBody(churchId, "Old", "INCOME"))
+
+        mockMvc
+            .perform(
+                patch("/api/v1/churches/{churchId}/transaction-categories/{id}/deactivate", churchId, toDeactivateId)
+                    .param("version", "0"),
+            ).andExpect(status().isOk)
+
         mockMvc
             .perform(get("/api/v1/churches/{churchId}/transaction-categories", churchId))
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.length()").value(2))
-            .andExpect(jsonPath("$[*].id", hasItems(activeId, toDeactivateId)))
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].id").value(activeId))
     }
 
     @Test
@@ -301,5 +304,118 @@ class TransactionCategoryIntegrationTest {
             .andExpect(jsonPath("$[0].name").value("Apple"))
             .andExpect(jsonPath("$[1].name").value("Mango"))
             .andExpect(jsonPath("$[2].name").value("Zebra"))
+    }
+
+    @Test
+    fun `PATCH deactivate sets status to INACTIVE`() {
+        val churchId = UUID.fromString(createChurch())
+        val id = extractId(createCategoryAndReturnBody(churchId, "X", "INCOME"))
+
+        mockMvc
+            .perform(
+                patch("/api/v1/churches/{churchId}/transaction-categories/{id}/deactivate", churchId, id)
+                    .param("version", "0"),
+            ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").value("INACTIVE"))
+    }
+
+    @Test
+    fun `PATCH activate sets status to ACTIVE`() {
+        val churchId = UUID.fromString(createChurch())
+        val id = extractId(createCategoryAndReturnBody(churchId, "X", "INCOME"))
+
+        val deactivateBody =
+            mockMvc
+                .perform(
+                    patch("/api/v1/churches/{churchId}/transaction-categories/{id}/deactivate", churchId, id)
+                        .param("version", "0"),
+                ).andExpect(status().isOk)
+                .andReturn()
+                .response.contentAsString
+
+        val newVersion = objectMapper.readTree(deactivateBody).get("version").asString()
+
+        mockMvc
+            .perform(
+                patch("/api/v1/churches/{churchId}/transaction-categories/{id}/activate", churchId, id)
+                    .param("version", newVersion),
+            ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").value("ACTIVE"))
+    }
+
+    @Test
+    fun `PATCH deactivate returns 404 on unknown id`() {
+        val churchId = UUID.fromString(createChurch())
+        val unknownId = UUID.randomUUID()
+
+        mockMvc
+            .perform(
+                patch("/api/v1/churches/{churchId}/transaction-categories/{id}/deactivate", churchId, unknownId)
+                    .param("version", "0"),
+            ).andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `PATCH deactivate returns 404 on tenant mismatch`() {
+        val churchOne = UUID.fromString(createChurch("Church One"))
+        val churchTwo = UUID.fromString(createChurch("Church Two"))
+        val id = extractId(createCategoryAndReturnBody(churchOne, "X", "INCOME"))
+
+        mockMvc
+            .perform(
+                patch("/api/v1/churches/{churchId}/transaction-categories/{id}/deactivate", churchTwo, id)
+                    .param("version", "0"),
+            ).andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `PATCH activate returns 404 on unknown id`() {
+        val churchId = UUID.fromString(createChurch())
+        val unknownId = UUID.randomUUID()
+
+        mockMvc
+            .perform(
+                patch("/api/v1/churches/{churchId}/transaction-categories/{id}/activate", churchId, unknownId)
+                    .param("version", "0"),
+            ).andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `PATCH activate returns 404 on tenant mismatch`() {
+        val churchOne = UUID.fromString(createChurch("Church One"))
+        val churchTwo = UUID.fromString(createChurch("Church Two"))
+        val id = extractId(createCategoryAndReturnBody(churchOne, "X", "INCOME"))
+
+        mockMvc
+            .perform(
+                patch("/api/v1/churches/{churchId}/transaction-categories/{id}/activate", churchTwo, id)
+                    .param("version", "0"),
+            ).andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `Deactivated category is excluded from default list but included with status=ALL`() {
+        val churchId = UUID.fromString(createChurch())
+        val activeId = extractId(createCategoryAndReturnBody(churchId, "Active", "INCOME"))
+        val toDeactivateId = extractId(createCategoryAndReturnBody(churchId, "Hidden", "INCOME"))
+
+        mockMvc
+            .perform(
+                patch("/api/v1/churches/{churchId}/transaction-categories/{id}/deactivate", churchId, toDeactivateId)
+                    .param("version", "0"),
+            ).andExpect(status().isOk)
+
+        mockMvc
+            .perform(get("/api/v1/churches/{churchId}/transaction-categories", churchId))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].id").value(activeId))
+
+        mockMvc
+            .perform(
+                get("/api/v1/churches/{churchId}/transaction-categories", churchId)
+                    .param("status", "ALL"),
+            ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(2))
     }
 }

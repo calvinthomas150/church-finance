@@ -444,4 +444,106 @@ class TransactionCategoryTest {
             transactionCategoryService.list(churchId, TransactionCategoryStatusFilter.ACTIVE, type = null)
         }
     }
+
+    @Test
+    fun `deactivate sets status to INACTIVE`() {
+        val churchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val existing =
+            buildTransactionCategoryJpaEntity(id = id, name = "X", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = churchId }
+        val existingDomain =
+            buildTransactionCategory(name = "X", transactionType = FinancialTransactionType.INCOME)
+                .copy(id = Ulid.from(id), churchId = Ulid.from(churchId))
+        val deactivated =
+            buildTransactionCategoryJpaEntity(id = id, name = "X", transactionType = FinancialTransactionType.INCOME)
+                .also {
+                    it.churchId = churchId
+                    it.status = TransactionCategoryStatus.INACTIVE
+                    it.version = 1
+                }
+        val deactivatedDomain = existingDomain.copy(status = TransactionCategoryStatus.INACTIVE, version = 1)
+
+        every { repository.findById(id) } returns java.util.Optional.of(existing)
+        every { mapper.toDomain(existing) } returns existingDomain
+        every { mapper.toJpaEntity(any()) } returns deactivated
+        every { repository.save(deactivated) } returns deactivated
+        every { mapper.toDomain(deactivated) } returns deactivatedDomain
+
+        val response = transactionCategoryService.deactivate(churchId, id, version = 0)
+
+        assertEquals(TransactionCategoryStatus.INACTIVE, response.status)
+    }
+
+    @Test
+    fun `activate sets status to ACTIVE`() {
+        val churchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val existing =
+            buildTransactionCategoryJpaEntity(id = id, name = "X", transactionType = FinancialTransactionType.INCOME)
+                .also {
+                    it.churchId = churchId
+                    it.status = TransactionCategoryStatus.INACTIVE
+                }
+        val existingDomain =
+            buildTransactionCategory(name = "X", transactionType = FinancialTransactionType.INCOME)
+                .copy(id = Ulid.from(id), churchId = Ulid.from(churchId), status = TransactionCategoryStatus.INACTIVE)
+        val activated =
+            buildTransactionCategoryJpaEntity(id = id, name = "X", transactionType = FinancialTransactionType.INCOME)
+                .also {
+                    it.churchId = churchId
+                    it.version = 2
+                }
+        val activatedDomain = existingDomain.copy(status = TransactionCategoryStatus.ACTIVE, version = 2)
+
+        every { repository.findById(id) } returns java.util.Optional.of(existing)
+        every { mapper.toDomain(existing) } returns existingDomain
+        every { mapper.toJpaEntity(any()) } returns activated
+        every { repository.save(activated) } returns activated
+        every { mapper.toDomain(activated) } returns activatedDomain
+
+        val response = transactionCategoryService.activate(churchId, id, version = 1)
+
+        assertEquals(TransactionCategoryStatus.ACTIVE, response.status)
+    }
+
+    @Test
+    fun `deactivate throws not-found on tenant mismatch`() {
+        val urlChurchId = UUID.randomUUID()
+        val actualChurchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val existing =
+            buildTransactionCategoryJpaEntity(id = id, name = "X", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = actualChurchId }
+        val existingDomain =
+            buildTransactionCategory(name = "X", transactionType = FinancialTransactionType.INCOME)
+                .copy(id = Ulid.from(id), churchId = Ulid.from(actualChurchId))
+
+        every { repository.findById(id) } returns java.util.Optional.of(existing)
+        every { mapper.toDomain(existing) } returns existingDomain
+
+        assertFailsWith<TransactionCategoryNotFoundException> {
+            transactionCategoryService.deactivate(urlChurchId, id, version = 0)
+        }
+    }
+
+    @Test
+    fun `activate throws not-found on tenant mismatch`() {
+        val urlChurchId = UUID.randomUUID()
+        val actualChurchId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val existing =
+            buildTransactionCategoryJpaEntity(id = id, name = "X", transactionType = FinancialTransactionType.INCOME)
+                .also { it.churchId = actualChurchId }
+        val existingDomain =
+            buildTransactionCategory(name = "X", transactionType = FinancialTransactionType.INCOME)
+                .copy(id = Ulid.from(id), churchId = Ulid.from(actualChurchId))
+
+        every { repository.findById(id) } returns java.util.Optional.of(existing)
+        every { mapper.toDomain(existing) } returns existingDomain
+
+        assertFailsWith<TransactionCategoryNotFoundException> {
+            transactionCategoryService.activate(urlChurchId, id, version = 0)
+        }
+    }
 }
