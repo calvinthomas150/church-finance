@@ -231,7 +231,7 @@ class TransactionCategoryTest {
             transactionCategoryService.update(
                 churchId = churchId,
                 id = id,
-                req = UpdateTransactionCategoryRequest(name = "New", version = 0),
+                updateTransactionCategoryRequest = UpdateTransactionCategoryRequest(name = "New", version = 0),
             )
 
         assertEquals("New", response.name)
@@ -257,7 +257,7 @@ class TransactionCategoryTest {
         transactionCategoryService.update(
             churchId = churchId,
             id = id,
-            req = UpdateTransactionCategoryRequest(name = "Same", version = 0),
+            updateTransactionCategoryRequest = UpdateTransactionCategoryRequest(name = "Same", version = 0),
         )
 
         verify(exactly = 0) {
@@ -290,37 +290,9 @@ class TransactionCategoryTest {
             transactionCategoryService.update(
                 churchId = churchId,
                 id = id,
-                req = UpdateTransactionCategoryRequest(name = "Taken", version = 0),
+                updateTransactionCategoryRequest = UpdateTransactionCategoryRequest(name = "Taken", version = 0),
             )
         }
-    }
-
-    @Test
-    fun `update permits keeping the same name (excludingId guard)`() {
-        val churchId = UUID.randomUUID()
-        val id = UUID.randomUUID()
-        val existing =
-            buildTransactionCategoryJpaEntity(id = id, name = "Old", transactionType = FinancialTransactionType.INCOME)
-                .also { it.churchId = churchId }
-        val existingDomain =
-            buildTransactionCategory(name = "Old", transactionType = FinancialTransactionType.INCOME)
-                .copy(id = Ulid.from(id), churchId = Ulid.from(churchId))
-
-        every { repository.findById(id) } returns java.util.Optional.of(existing)
-        every { mapper.toDomain(existing) } returns existingDomain
-        // findBy is NOT called because name is unchanged; covered by the "skips uniqueness check" test.
-        every { mapper.toJpaEntity(any()) } returns existing
-        every { repository.save(existing) } returns existing
-        every { mapper.toDomain(existing) } returns existingDomain
-
-        val response =
-            transactionCategoryService.update(
-                churchId = churchId,
-                id = id,
-                req = UpdateTransactionCategoryRequest(name = "Old", version = 0),
-            )
-
-        assertEquals("Old", response.name)
     }
 
     @Test
@@ -342,7 +314,7 @@ class TransactionCategoryTest {
             transactionCategoryService.update(
                 churchId = urlChurchId,
                 id = id,
-                req = UpdateTransactionCategoryRequest(name = "Y", version = 0),
+                updateTransactionCategoryRequest = UpdateTransactionCategoryRequest(name = "Y", version = 0),
             )
         }
     }

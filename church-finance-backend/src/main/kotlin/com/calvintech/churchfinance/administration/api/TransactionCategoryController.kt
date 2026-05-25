@@ -120,6 +120,7 @@ class TransactionCategoryController(
     @ApiResponses(
         value = [
             ApiResponse(responseCode = "200", description = "Category deactivated"),
+            ApiResponse(responseCode = "400", description = "Missing required `version` parameter", content = []),
             ApiResponse(responseCode = "404", description = "Transaction category not found", content = []),
             ApiResponse(responseCode = "409", description = "Optimistic locking conflict", content = []),
         ],
@@ -141,6 +142,7 @@ class TransactionCategoryController(
     @ApiResponses(
         value = [
             ApiResponse(responseCode = "200", description = "Category activated"),
+            ApiResponse(responseCode = "400", description = "Missing required `version` parameter", content = []),
             ApiResponse(responseCode = "404", description = "Transaction category not found", content = []),
             ApiResponse(responseCode = "409", description = "Optimistic locking conflict", content = []),
         ],

@@ -57,21 +57,36 @@ class TransactionCategoryService(
         id: UUID,
     ): TransactionCategoryResponse = toResponse(findCategoryScopedToChurch(churchId, id))
 
+    fun list(
+        churchId: UUID,
+        status: TransactionCategoryStatusFilter,
+        type: FinancialTransactionType?,
+    ): List<TransactionCategoryResponse> {
+        requireChurchExists(churchId)
+        return repository
+            .findAllByChurchId(churchId)
+            .map(mapper::toDomain)
+            .filter { status.matches(it.status) }
+            .filter { type == null || it.transactionType == type }
+            .sortedBy { it.name }
+            .map(::toResponse)
+    }
+
     fun update(
         churchId: UUID,
         id: UUID,
-        req: UpdateTransactionCategoryRequest,
+        updateTransactionCategoryRequest: UpdateTransactionCategoryRequest,
     ): TransactionCategoryResponse {
         val existing = findCategoryScopedToChurch(churchId, id)
-        if (existing.name != req.name) {
+        if (existing.name != updateTransactionCategoryRequest.name) {
             requireNameAvailable(
                 churchId = churchId,
-                name = req.name,
+                name = updateTransactionCategoryRequest.name,
                 type = existing.transactionType,
                 excludingId = id,
             )
         }
-        val updated = existing.copy(name = req.name, version = req.version)
+        val updated = existing.copy(name = updateTransactionCategoryRequest.name, version = updateTransactionCategoryRequest.version)
         return saveAndRespond(updated)
     }
 
@@ -95,21 +110,6 @@ class TransactionCategoryService(
         return saveAndRespond(updated)
     }
 
-    fun list(
-        churchId: UUID,
-        status: TransactionCategoryStatusFilter,
-        type: FinancialTransactionType?,
-    ): List<TransactionCategoryResponse> {
-        requireChurchExists(churchId)
-        return repository
-            .findAllByChurchId(churchId)
-            .map(mapper::toDomain)
-            .filter { status.matches(it.status) }
-            .filter { type == null || it.transactionType == type }
-            .sortedBy { it.name }
-            .map(::toResponse)
-    }
-
     private fun findCategoryScopedToChurch(
         churchId: UUID,
         id: UUID,
@@ -128,6 +128,10 @@ class TransactionCategoryService(
         }
     }
 
+    // `excludingId` lets the update flow ignore the row being updated when it queries by the new name.
+    // Today the caller (update) only invokes this helper when the name actually changes, so the query
+    // cannot return the row being updated — but keeping the parameter preserves the rule's semantics
+    // and the DB constraint remains the safety net for the TOCTOU race regardless.
     private fun requireNameAvailable(
         churchId: UUID,
         name: String,
