@@ -19,6 +19,9 @@ import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @SpringBootTest
 @ImportTestcontainers(TestcontainersConfiguration::class)
@@ -132,6 +135,60 @@ class TransactionCategoryPersistenceTest {
                 buildJpaEntity(churchId = churchId, name = "Tithes", type = FinancialTransactionType.INCOME),
             )
         }
+    }
+
+    @Test
+    fun `findByChurchIdAndNameAndTransactionType returns matching category`() {
+        val churchId = persistChurch()
+        val entity = buildJpaEntity(churchId = churchId, name = "Offerings", type = FinancialTransactionType.INCOME)
+        transactionCategoryRepository.saveAndFlush(entity)
+
+        val found =
+            transactionCategoryRepository.findByChurchIdAndNameAndTransactionType(
+                churchId = churchId,
+                name = "Offerings",
+                transactionType = FinancialTransactionType.INCOME,
+            )
+
+        assertNotNull(found)
+        assertEquals(entity.id, found.id)
+    }
+
+    @Test
+    fun `findByChurchIdAndNameAndTransactionType returns null when type differs`() {
+        val churchId = persistChurch()
+        transactionCategoryRepository.saveAndFlush(
+            buildJpaEntity(churchId = churchId, name = "Offerings", type = FinancialTransactionType.INCOME),
+        )
+
+        val found =
+            transactionCategoryRepository.findByChurchIdAndNameAndTransactionType(
+                churchId = churchId,
+                name = "Offerings",
+                transactionType = FinancialTransactionType.EXPENDITURE,
+            )
+
+        assertNull(found)
+    }
+
+    @Test
+    fun `findAllByChurchId returns only categories for that church`() {
+        val churchOne = persistChurch("Church One")
+        val churchTwo = persistChurch("Church Two")
+        transactionCategoryRepository.saveAndFlush(
+            buildJpaEntity(churchId = churchOne, name = "A", type = FinancialTransactionType.INCOME),
+        )
+        transactionCategoryRepository.saveAndFlush(
+            buildJpaEntity(churchId = churchOne, name = "B", type = FinancialTransactionType.EXPENDITURE),
+        )
+        transactionCategoryRepository.saveAndFlush(
+            buildJpaEntity(churchId = churchTwo, name = "C", type = FinancialTransactionType.INCOME),
+        )
+
+        val results = transactionCategoryRepository.findAllByChurchId(churchOne)
+
+        assertEquals(2, results.size)
+        assertTrue(results.all { it.churchId == churchOne })
     }
 
     private fun persistChurch(name: String = "Test Church"): UUID {
