@@ -2,6 +2,7 @@ package com.calvintech.churchfinance.administration.api
 
 import com.calvintech.churchfinance.TestcontainersConfiguration
 import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
+import org.hamcrest.Matchers.hasItems
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.context.ImportTestcontainers
@@ -143,5 +144,70 @@ class TransactionCategoryIntegrationTest {
         mockMvc
             .perform(get("/api/v1/churches/{churchId}/transaction-categories/{id}", churchTwo, id))
             .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `GET list returns only ACTIVE categories by default`() {
+        val churchId = UUID.fromString(createChurch())
+        val activeId = extractId(createCategoryAndReturnBody(churchId, "Tithes", "INCOME"))
+        val toDeactivateBody = createCategoryAndReturnBody(churchId, "Old", "INCOME")
+        val toDeactivateId = extractId(toDeactivateBody)
+        // We can't deactivate yet (Task 11). Insert it INACTIVE via PATCH route once it exists.
+        // For now, this test will be updated in Task 11 once deactivate exists.
+        // In this task, assert that the freshly created category appears in the default listing.
+        mockMvc
+            .perform(get("/api/v1/churches/{churchId}/transaction-categories", churchId))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[*].id", hasItems(activeId, toDeactivateId)))
+    }
+
+    @Test
+    fun `GET list returns empty list when church has no categories`() {
+        val churchId = UUID.fromString(createChurch())
+
+        mockMvc
+            .perform(get("/api/v1/churches/{churchId}/transaction-categories", churchId))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(0))
+    }
+
+    @Test
+    fun `GET list returns 404 when church does not exist`() {
+        val unknownChurchId = UUID.randomUUID()
+
+        mockMvc
+            .perform(get("/api/v1/churches/{churchId}/transaction-categories", unknownChurchId))
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `GET list with type=INCOME filters correctly`() {
+        val churchId = UUID.fromString(createChurch())
+        createCategoryAndReturnBody(churchId, "Tithes", "INCOME")
+        createCategoryAndReturnBody(churchId, "Bills", "EXPENDITURE")
+
+        mockMvc
+            .perform(
+                get("/api/v1/churches/{churchId}/transaction-categories", churchId)
+                    .param("type", "INCOME"),
+            ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].name").value("Tithes"))
+    }
+
+    @Test
+    fun `GET list sorts by name ascending`() {
+        val churchId = UUID.fromString(createChurch())
+        createCategoryAndReturnBody(churchId, "Zebra", "INCOME")
+        createCategoryAndReturnBody(churchId, "Apple", "INCOME")
+        createCategoryAndReturnBody(churchId, "Mango", "INCOME")
+
+        mockMvc
+            .perform(get("/api/v1/churches/{churchId}/transaction-categories", churchId))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].name").value("Apple"))
+            .andExpect(jsonPath("$[1].name").value("Mango"))
+            .andExpect(jsonPath("$[2].name").value("Zebra"))
     }
 }

@@ -2,6 +2,7 @@ package com.calvintech.churchfinance.administration.service
 
 import com.calvintech.churchfinance.administration.api.CreateTransactionCategoryRequest
 import com.calvintech.churchfinance.administration.api.TransactionCategoryResponse
+import com.calvintech.churchfinance.administration.api.TransactionCategoryStatusFilter
 import com.calvintech.churchfinance.administration.domain.ChurchNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryNameConflictException
@@ -53,6 +54,21 @@ class TransactionCategoryService(
         churchId: UUID,
         id: UUID,
     ): TransactionCategoryResponse = toResponse(findCategoryScopedToChurch(churchId, id))
+
+    fun list(
+        churchId: UUID,
+        status: TransactionCategoryStatusFilter,
+        type: FinancialTransactionType?,
+    ): List<TransactionCategoryResponse> {
+        requireChurchExists(churchId)
+        return repository
+            .findAllByChurchId(churchId)
+            .map(mapper::toDomain)
+            .filter { status.matches(it.status) }
+            .filter { type == null || it.transactionType == type }
+            .sortedBy { it.name }
+            .map(::toResponse)
+    }
 
     private fun findCategoryScopedToChurch(
         churchId: UUID,

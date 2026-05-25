@@ -1,6 +1,7 @@
 package com.calvintech.churchfinance.administration.service
 
 import com.calvintech.churchfinance.administration.api.CreateTransactionCategoryRequest
+import com.calvintech.churchfinance.administration.api.TransactionCategoryStatusFilter
 import com.calvintech.churchfinance.administration.domain.ChurchNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryNameConflictException
@@ -192,6 +193,104 @@ class TransactionCategoryTest {
 
         assertFailsWith<TransactionCategoryNotFoundException> {
             transactionCategoryService.get(urlChurchId, id)
+        }
+    }
+
+    private fun jpaList(vararg entities: TransactionCategoryJpaEntity) = entities.toList()
+
+    @Test
+    fun `list returns only ACTIVE categories sorted by name when no filters supplied`() {
+        val churchId = UUID.randomUUID()
+        val active = buildTransactionCategoryJpaEntity(name = "Tithes", transactionType = FinancialTransactionType.INCOME)
+        val inactive =
+            buildTransactionCategoryJpaEntity(name = "Old", transactionType = FinancialTransactionType.INCOME)
+                .also { it.status = TransactionCategoryStatus.INACTIVE }
+
+        every { churchRepository.existsById(churchId) } returns true
+        every { repository.findAllByChurchId(churchId) } returns jpaList(inactive, active)
+        every { mapper.toDomain(active) } returns
+            buildTransactionCategory(name = "Tithes", transactionType = FinancialTransactionType.INCOME)
+        every { mapper.toDomain(inactive) } returns
+            buildTransactionCategory(
+                name = "Old",
+                transactionType = FinancialTransactionType.INCOME,
+            ).copy(status = TransactionCategoryStatus.INACTIVE)
+
+        val result = transactionCategoryService.list(churchId, TransactionCategoryStatusFilter.ACTIVE, type = null)
+
+        assertEquals(1, result.size)
+        assertEquals("Tithes", result.first().name)
+    }
+
+    @Test
+    fun `list with status=ALL returns all rows sorted by name`() {
+        val churchId = UUID.randomUUID()
+        val a = buildTransactionCategoryJpaEntity(name = "Z", transactionType = FinancialTransactionType.INCOME)
+        val b =
+            buildTransactionCategoryJpaEntity(name = "A", transactionType = FinancialTransactionType.EXPENDITURE)
+                .also { it.status = TransactionCategoryStatus.INACTIVE }
+
+        every { churchRepository.existsById(churchId) } returns true
+        every { repository.findAllByChurchId(churchId) } returns jpaList(a, b)
+        every { mapper.toDomain(a) } returns buildTransactionCategory(name = "Z", transactionType = FinancialTransactionType.INCOME)
+        every { mapper.toDomain(b) } returns
+            buildTransactionCategory(name = "A", transactionType = FinancialTransactionType.EXPENDITURE)
+                .copy(status = TransactionCategoryStatus.INACTIVE)
+
+        val result = transactionCategoryService.list(churchId, TransactionCategoryStatusFilter.ALL, type = null)
+
+        assertEquals(listOf("A", "Z"), result.map { it.name })
+    }
+
+    @Test
+    fun `list with status=INACTIVE returns only inactive`() {
+        val churchId = UUID.randomUUID()
+        val active = buildTransactionCategoryJpaEntity(name = "X", transactionType = FinancialTransactionType.INCOME)
+        val inactive =
+            buildTransactionCategoryJpaEntity(name = "Y", transactionType = FinancialTransactionType.INCOME)
+                .also { it.status = TransactionCategoryStatus.INACTIVE }
+
+        every { churchRepository.existsById(churchId) } returns true
+        every { repository.findAllByChurchId(churchId) } returns jpaList(active, inactive)
+        every { mapper.toDomain(active) } returns buildTransactionCategory(name = "X", transactionType = FinancialTransactionType.INCOME)
+        every { mapper.toDomain(inactive) } returns
+            buildTransactionCategory(name = "Y", transactionType = FinancialTransactionType.INCOME)
+                .copy(status = TransactionCategoryStatus.INACTIVE)
+
+        val result = transactionCategoryService.list(churchId, TransactionCategoryStatusFilter.INACTIVE, type = null)
+
+        assertEquals(listOf("Y"), result.map { it.name })
+    }
+
+    @Test
+    fun `list with type filter returns only matching type`() {
+        val churchId = UUID.randomUUID()
+        val income = buildTransactionCategoryJpaEntity(name = "X", transactionType = FinancialTransactionType.INCOME)
+        val expense = buildTransactionCategoryJpaEntity(name = "Y", transactionType = FinancialTransactionType.EXPENDITURE)
+
+        every { churchRepository.existsById(churchId) } returns true
+        every { repository.findAllByChurchId(churchId) } returns jpaList(income, expense)
+        every { mapper.toDomain(income) } returns buildTransactionCategory(name = "X", transactionType = FinancialTransactionType.INCOME)
+        every { mapper.toDomain(expense) } returns
+            buildTransactionCategory(name = "Y", transactionType = FinancialTransactionType.EXPENDITURE)
+
+        val result =
+            transactionCategoryService.list(
+                churchId,
+                TransactionCategoryStatusFilter.ACTIVE,
+                type = FinancialTransactionType.INCOME,
+            )
+
+        assertEquals(listOf("X"), result.map { it.name })
+    }
+
+    @Test
+    fun `list throws ChurchNotFoundException when church does not exist`() {
+        val churchId = UUID.randomUUID()
+        every { churchRepository.existsById(churchId) } returns false
+
+        assertFailsWith<ChurchNotFoundException> {
+            transactionCategoryService.list(churchId, TransactionCategoryStatusFilter.ACTIVE, type = null)
         }
     }
 }

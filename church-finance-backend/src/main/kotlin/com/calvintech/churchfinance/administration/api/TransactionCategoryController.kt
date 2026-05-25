@@ -1,6 +1,7 @@
 package com.calvintech.churchfinance.administration.api
 
 import com.calvintech.churchfinance.administration.service.TransactionCategoryService
+import com.calvintech.churchfinance.shared.domain.FinancialTransactionType
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
@@ -46,6 +48,28 @@ class TransactionCategoryController(
         @PathVariable churchId: UUID,
         @Valid @RequestBody request: CreateTransactionCategoryRequest,
     ): TransactionCategoryResponse = transactionCategoryService.create(churchId, request)
+
+    @GetMapping
+    @Operation(
+        summary = "List transaction categories for a church",
+        description =
+            "Returns categories for the supplied church. Defaults to ACTIVE only; use `status=ALL` or " +
+                "`status=INACTIVE` to broaden, and `type=INCOME` or `type=EXPENDITURE` to narrow.",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Categories returned"),
+            ApiResponse(responseCode = "404", description = "Church not found", content = []),
+        ],
+    )
+    fun list(
+        @Parameter(description = "Identifier of the church", required = true)
+        @PathVariable churchId: UUID,
+        @Parameter(description = "Status filter (default ACTIVE)")
+        @RequestParam(defaultValue = "ACTIVE") status: TransactionCategoryStatusFilter,
+        @Parameter(description = "Optional transaction type filter")
+        @RequestParam(required = false) type: FinancialTransactionType?,
+    ): List<TransactionCategoryResponse> = transactionCategoryService.list(churchId, status, type)
 
     @GetMapping("/{id}")
     @Operation(
