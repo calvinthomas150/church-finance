@@ -1,8 +1,10 @@
 package com.calvintech.churchfinance.administration.service
 
 import com.calvintech.churchfinance.administration.api.CreateTransactionCategoryRequest
+import com.calvintech.churchfinance.administration.domain.ChurchNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
 import com.calvintech.churchfinance.administration.domain.TransactionCategoryStatus
+import com.calvintech.churchfinance.administration.persistence.ChurchRepository
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryJpaEntity
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryMapper
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryRepository
@@ -19,6 +21,7 @@ import java.util.UUID
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class TransactionCategoryTest {
     @MockK
@@ -30,12 +33,15 @@ class TransactionCategoryTest {
     @MockK
     lateinit var userProvider: CurrentUserProvider
 
+    @MockK
+    lateinit var churchRepository: ChurchRepository
+
     lateinit var transactionCategoryService: TransactionCategoryService
 
     @BeforeTest
     fun setUp() {
         MockKAnnotations.init(this)
-        transactionCategoryService = TransactionCategoryService(mapper, repository, userProvider)
+        transactionCategoryService = TransactionCategoryService(mapper, repository, userProvider, churchRepository)
     }
 
     private fun buildTransactionCategory(
@@ -77,6 +83,7 @@ class TransactionCategoryTest {
         val savedEntity = buildTransactionCategoryJpaEntity(name = "Offerings", transactionType = FinancialTransactionType.INCOME)
         val savedTransactionCategory = buildTransactionCategory(name = "Offerings", transactionType = FinancialTransactionType.INCOME)
 
+        every { churchRepository.existsById(churchId) } returns true
         every { userProvider.getCurrentUserId() } returns currentUserId
         every { mapper.toJpaEntity(capture(transactionCategorySlot)) } returns savedEntity
         every { repository.save(savedEntity) } returns savedEntity
@@ -93,5 +100,18 @@ class TransactionCategoryTest {
         assertEquals(TransactionCategoryStatus.ACTIVE, response.status)
         assertNotNull(response.id)
         assertEquals(currentUserId, transactionCategorySlot.captured.addedBy)
+    }
+
+    @Test
+    fun `create throws ChurchNotFoundException when church does not exist`() {
+        val churchId = UUID.randomUUID()
+        every { churchRepository.existsById(churchId) } returns false
+
+        assertFailsWith<ChurchNotFoundException> {
+            transactionCategoryService.create(
+                churchId,
+                CreateTransactionCategoryRequest(name = "Offerings", type = FinancialTransactionType.INCOME),
+            )
+        }
     }
 }

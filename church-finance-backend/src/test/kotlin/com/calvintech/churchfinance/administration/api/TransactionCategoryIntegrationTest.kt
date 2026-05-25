@@ -38,6 +38,18 @@ class TransactionCategoryIntegrationTest {
     }
 
     @Test
+    fun `POST should return 404 when church does not exist`() {
+        val unknownChurchId = UUID.randomUUID()
+        mockMvc
+            .perform(
+                post("/api/v1/churches/{churchId}/transaction-categories", unknownChurchId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"name": "Offerings", "type": "INCOME"}"""),
+            ).andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.message").exists())
+    }
+
+    @Test
     fun `POST should create a transaction category and return 201`() {
         val churchId = UUID.fromString(createChurch())
         mockMvc

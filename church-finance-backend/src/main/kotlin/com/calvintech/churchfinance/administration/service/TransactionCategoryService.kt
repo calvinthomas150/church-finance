@@ -2,7 +2,9 @@ package com.calvintech.churchfinance.administration.service
 
 import com.calvintech.churchfinance.administration.api.CreateTransactionCategoryRequest
 import com.calvintech.churchfinance.administration.api.TransactionCategoryResponse
+import com.calvintech.churchfinance.administration.domain.ChurchNotFoundException
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
+import com.calvintech.churchfinance.administration.persistence.ChurchRepository
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryMapper
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryRepository
 import com.calvintech.churchfinance.shared.service.CurrentUserProvider
@@ -17,11 +19,14 @@ class TransactionCategoryService(
     private val mapper: TransactionCategoryMapper,
     private val repository: TransactionCategoryRepository,
     private val userProvider: CurrentUserProvider,
+    private val churchRepository: ChurchRepository,
 ) {
     fun create(
         churchId: UUID,
         createTransactionCategoryRequest: CreateTransactionCategoryRequest,
     ): TransactionCategoryResponse {
+        requireChurchExists(churchId)
+
         val transactionCategory =
             TransactionCategory(
                 id = UlidCreator.getUlid(),
@@ -33,6 +38,12 @@ class TransactionCategoryService(
             )
 
         return saveAndRespond(transactionCategory)
+    }
+
+    private fun requireChurchExists(churchId: UUID) {
+        if (!churchRepository.existsById(churchId)) {
+            throw ChurchNotFoundException(churchId)
+        }
     }
 
     private fun saveAndRespond(transactionCategory: TransactionCategory): TransactionCategoryResponse {
