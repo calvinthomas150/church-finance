@@ -2,6 +2,7 @@ package com.calvintech.churchfinance.administration.service
 
 import com.calvintech.churchfinance.administration.api.CreateTransactionCategoryRequest
 import com.calvintech.churchfinance.administration.domain.TransactionCategory
+import com.calvintech.churchfinance.administration.domain.TransactionCategoryStatus
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryJpaEntity
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryMapper
 import com.calvintech.churchfinance.administration.persistence.TransactionCategoryRepository
@@ -89,6 +90,7 @@ class TransactionCategoryTest {
 
         assertEquals("Offerings", response.name)
         assertEquals(FinancialTransactionType.INCOME, response.type)
+        assertEquals(TransactionCategoryStatus.ACTIVE, response.status)
         assertNotNull(response.id)
         assertEquals(currentUserId, transactionCategorySlot.captured.addedBy)
     }

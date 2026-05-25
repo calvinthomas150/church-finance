@@ -45,6 +45,7 @@ class TransactionCategoryService(
             id = transactionCategory.id.toUuid(),
             name = transactionCategory.name,
             type = transactionCategory.transactionType,
+            status = transactionCategory.status,
             version = transactionCategory.version,
         )
 }

@@ -48,6 +48,7 @@ class TransactionCategoryIntegrationTest {
             ).andExpect(status().isCreated)
             .andExpect(jsonPath("$.name").value("Offerings"))
             .andExpect(jsonPath("$.type").value(FinancialTransactionType.INCOME.name))
+            .andExpect(jsonPath("$.status").value("ACTIVE"))
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.version").value(0))
     }
